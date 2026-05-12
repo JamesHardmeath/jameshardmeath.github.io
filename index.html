@@ -1,1458 +1,2399 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="hu">
 <head>
 <meta charset="UTF-8" />
-<title>TANK 1990 — Battle City Tribute</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>markin.hu — Mai döntés</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
-
   :root {
-    --bg: #000000;
-    --field: #686868;       /* arena floor – classic gray */
-    --wall: #b8b8b8;        /* off-field surround */
-    --brick-a: #b04020;
-    --brick-b: #f8a060;
-    --steel-a: #909090;
-    --steel-b: #f0f0f0;
-    --water-a: #4060f8;
-    --water-b: #00d8ff;
-    --forest: #00b820;
-    --ice: #d8d8d8;
-    --eagle-a: #d8a060;
-    --eagle-b: #f8f8f8;
-    --hud: #d89030;
-    --txt: #f8f8f8;
+    --ink: #0d1b2a;
+    --ink-soft: #1b263b;
+    --paper: #f5f1e8;
+    --paper-warm: #ede6d3;
+    --rule: #d4cdb8;
+    --accent: #8b3a3a;
+    --accent-soft: #b8857a;
+    --positive: #2d5a3d;
+    --negative: #8b3a3a;
+    --muted: #6b6456;
+    --highlight: #e8d59f;
   }
-  * { box-sizing: border-box; }
-  html, body {
-    margin: 0; padding: 0;
-    background: #111;
-    color: var(--txt);
-    font-family: 'Press Start 2P', monospace;
-    height: 100%;
-    overflow: hidden;
-  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
   body {
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: var(--paper);
+    color: var(--ink);
+    line-height: 1.6;
+    font-size: 16px;
+    -webkit-font-smoothing: antialiased;
+    background-image:
+      radial-gradient(circle at 20% 10%, rgba(139, 58, 58, 0.03), transparent 50%),
+      radial-gradient(circle at 80% 60%, rgba(13, 27, 42, 0.04), transparent 50%);
     min-height: 100vh;
-    image-rendering: pixelated;
   }
-  #wrap {
+  .container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+  .serif { font-family: 'Fraunces', Georgia, serif; font-feature-settings: "ss01"; }
+  .mono { font-family: 'JetBrains Mono', monospace; font-variant-numeric: tabular-nums; }
+
+  /* Header */
+  header.site-header {
+    border-bottom: 1px solid var(--rule);
+    background: var(--paper);
+    padding: 20px 0;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    backdrop-filter: blur(10px);
+    background: rgba(245, 241, 232, 0.92);
+  }
+  .header-inner { display: flex; align-items: center; justify-content: space-between; gap: 24px; }
+  .brand { display: flex; align-items: baseline; gap: 12px; }
+  .brand-name {
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: 28px;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+  }
+  .brand-dot { color: var(--accent); }
+  .brand-tag {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--muted);
+    font-weight: 500;
+  }
+  .lang-toggle {
     display: flex;
-    gap: 16px;
-    align-items: flex-start;
-    padding: 12px;
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    overflow: hidden;
+    font-size: 13px;
+    font-weight: 500;
   }
-  canvas {
-    background: #000;
-    border: 4px solid #222;
-    box-shadow: 0 0 0 2px #000, 0 8px 30px rgba(0,0,0,0.7);
-    image-rendering: pixelated;
-    display: block;
+  .lang-toggle button {
+    background: transparent;
+    border: none;
+    padding: 6px 14px;
+    cursor: pointer;
+    color: var(--muted);
+    transition: all 0.15s;
+    font-family: inherit;
   }
-  #side {
-    color: var(--hud);
-    font-size: 10px;
-    line-height: 1.8;
-    width: 220px;
-    padding-top: 8px;
+  .lang-toggle button.active {
+    background: var(--ink);
+    color: var(--paper);
   }
-  #side h1 {
-    font-size: 14px;
-    color: #f8f8f8;
-    margin: 0 0 14px 0;
-    letter-spacing: 1px;
+  .lang-toggle button:hover:not(.active) { background: var(--paper-warm); color: var(--ink); }
+
+  /* Hero */
+  .hero {
+    padding: 64px 0 48px;
+    border-bottom: 1px solid var(--rule);
+    background: linear-gradient(180deg, var(--paper) 0%, var(--paper-warm) 100%);
   }
-  #side .row { margin-bottom: 10px; }
-  #side .key {
-    display: inline-block;
-    background: #222;
-    color: #fff;
-    border: 1px solid #555;
-    padding: 2px 6px;
-    margin-right: 6px;
-    font-size: 9px;
+  .hero-grid {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    gap: 48px;
+    align-items: start;
   }
-  #overlay {
-    position: absolute;
-    inset: 0;
-    background: rgba(0,0,0,0.85);
-    display: none;
+  @media (max-width: 900px) { .hero-grid { grid-template-columns: 1fr; gap: 24px; } }
+  .hero-headline {
+    font-family: 'Fraunces', serif;
+    font-size: clamp(40px, 5vw, 64px);
+    font-weight: 500;
+    line-height: 1.05;
+    letter-spacing: -0.025em;
+    color: var(--ink);
+    margin-bottom: 20px;
+  }
+  .hero-headline em {
+    font-style: italic;
+    font-weight: 400;
+    color: var(--accent);
+  }
+  .hero-lede {
+    font-size: 18px;
+    line-height: 1.55;
+    color: var(--ink-soft);
+    max-width: 540px;
+  }
+  .hero-meta {
+    border-left: 2px solid var(--accent);
+    padding: 4px 0 4px 18px;
+    font-size: 13px;
+  }
+  .hero-meta-label {
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--muted);
+    font-weight: 600;
+    margin-bottom: 8px;
+    font-size: 11px;
+  }
+  .hero-meta-value { color: var(--ink); margin-bottom: 14px; line-height: 1.5; }
+  .hero-meta-value:last-child { margin-bottom: 0; }
+
+  /* Form */
+  .form-section {
+    padding: 56px 0;
+    border-bottom: 1px solid var(--rule);
+  }
+  .section-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--accent);
+    font-weight: 600;
+    margin-bottom: 12px;
+    display: flex;
     align-items: center;
-    justify-content: center;
-    flex-direction: column;
-    color: #fff;
-    z-index: 10;
-    text-align: center;
+    gap: 10px;
   }
-  #overlay h2 { font-size: 26px; color: #d83030; margin-bottom: 14px; letter-spacing: 2px; }
-  #overlay p { font-size: 11px; margin: 6px 0; }
-  #stage {
+  .section-label::before {
+    content: '';
+    width: 24px;
+    height: 1px;
+    background: var(--accent);
+  }
+  .section-title {
+    font-family: 'Fraunces', serif;
+    font-size: 32px;
+    font-weight: 500;
+    margin-bottom: 8px;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+  }
+  .section-intro {
+    color: var(--muted);
+    margin-bottom: 32px;
+    max-width: 640px;
+    font-size: 15px;
+  }
+  .form-card {
+    background: rgba(255, 255, 255, 0.5);
+    border: 1px solid var(--rule);
+    border-radius: 2px;
+    padding: 32px;
+    box-shadow: 0 1px 0 rgba(13, 27, 42, 0.04);
+  }
+  .form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 20px 24px;
+  }
+  .field { display: flex; flex-direction: column; gap: 6px; }
+  .field-label {
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--ink-soft);
+  }
+  .field-hint { font-size: 12px; color: var(--muted); font-style: italic; }
+  .field input, .field select {
+    padding: 10px 12px;
+    border: 1px solid var(--rule);
+    background: var(--paper);
+    border-radius: 2px;
+    font-family: 'Inter', sans-serif;
+    font-size: 15px;
+    color: var(--ink);
+    transition: border-color 0.15s;
+  }
+  .field input.mono, .field select.mono { font-family: 'JetBrains Mono', monospace; }
+  .field input:focus, .field select:focus {
+    outline: none;
+    border-color: var(--ink);
+    box-shadow: 0 0 0 3px rgba(13, 27, 42, 0.08);
+  }
+  .field-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 0;
+  }
+  .field-checkbox input { width: 18px; height: 18px; accent-color: var(--ink); }
+  .field-checkbox label { font-size: 14px; color: var(--ink); cursor: pointer; }
+
+  .optional-toggle {
+    margin-top: 24px;
+    padding-top: 24px;
+    border-top: 1px dashed var(--rule);
+  }
+  .toggle-button {
+    background: none;
+    border: none;
+    color: var(--accent);
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    padding: 0;
+    font-family: inherit;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .toggle-button:hover { color: var(--ink); }
+  .toggle-icon { display: inline-block; transition: transform 0.2s; }
+  .toggle-icon.open { transform: rotate(90deg); }
+  .optional-content {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid var(--rule);
+  }
+
+  .submit-row {
+    margin-top: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+  .submit-button {
+    background: var(--ink);
+    color: var(--paper);
+    border: none;
+    padding: 14px 32px;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    cursor: pointer;
+    border-radius: 2px;
+    transition: all 0.15s;
+  }
+  .submit-button:hover { background: var(--accent); transform: translateY(-1px); }
+  .submit-button:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+  .submit-note { font-size: 13px; color: var(--muted); font-style: italic; }
+
+  .validation-error {
+    margin-top: 16px;
+    padding: 12px 16px;
+    background: rgba(139, 58, 58, 0.08);
+    border-left: 3px solid var(--accent);
+    color: var(--accent);
+    font-size: 13px;
+  }
+
+  /* Results */
+  .results-section { padding: 56px 0; border-bottom: 1px solid var(--rule); }
+  .results-block { margin-bottom: 48px; }
+  .results-block:last-child { margin-bottom: 0; }
+  .block-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 24px;
+    margin-bottom: 20px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--rule);
+  }
+  .block-title {
+    font-family: 'Fraunces', serif;
+    font-size: 24px;
+    font-weight: 500;
+    color: var(--ink);
+    letter-spacing: -0.015em;
+  }
+  .block-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+  }
+
+  /* Inputs restated table */
+  .restated-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    background: rgba(255, 255, 255, 0.5);
+    border: 1px solid var(--rule);
+    padding: 24px;
+  }
+  .restated-item { display: flex; flex-direction: column; gap: 4px; }
+  .restated-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    font-weight: 600;
+  }
+  .restated-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 16px;
+    color: var(--ink);
+    font-weight: 500;
+  }
+
+  /* Market snapshot */
+  .market-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+    background: rgba(255, 255, 255, 0.5);
+    border: 1px solid var(--rule);
+  }
+  .market-table tr { border-bottom: 1px solid var(--rule); }
+  .market-table tr:last-child { border-bottom: none; }
+  .market-table td { padding: 12px 16px; vertical-align: top; }
+  .market-table td:first-child { color: var(--ink-soft); width: 50%; }
+  .market-table td:last-child { font-family: 'JetBrains Mono', monospace; text-align: right; font-weight: 500; }
+  .market-table .source { font-size: 11px; color: var(--muted); display: block; margin-top: 2px; }
+
+  /* Module cards */
+  .modules-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+    gap: 16px;
+  }
+  .module-card {
+    background: rgba(255, 255, 255, 0.65);
+    border: 1px solid var(--rule);
+    padding: 20px 22px;
+    transition: all 0.2s;
     position: relative;
   }
-  .blink { animation: blink 0.6s steps(2) infinite; }
-  @keyframes blink { to { opacity: 0; } }
-  footer {
-    position: fixed;
-    bottom: 6px;
+  .module-card.ineligible { opacity: 0.55; background: rgba(0, 0, 0, 0.02); }
+  .module-card.penalty { border-left: 3px solid var(--accent); background: rgba(139, 58, 58, 0.03); }
+  .module-card.wait { border-left: 3px solid var(--highlight); }
+  .module-card.top-pick { border: 2px solid var(--ink); background: var(--paper); }
+  .module-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 4px;
+  }
+  .module-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+  }
+  .module-name {
+    font-family: 'Fraunces', serif;
+    font-size: 18px;
+    font-weight: 500;
+    color: var(--ink);
+    letter-spacing: -0.01em;
+    margin-bottom: 2px;
+  }
+  .module-subtitle { font-size: 12px; color: var(--muted); font-style: italic; margin-bottom: 14px; }
+  .module-status {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 2px;
+    display: inline-block;
+    margin-bottom: 12px;
+  }
+  .status-eligible { background: rgba(45, 90, 61, 0.1); color: var(--positive); }
+  .status-ineligible { background: rgba(139, 58, 58, 0.1); color: var(--accent); }
+  .status-warning { background: rgba(232, 213, 159, 0.4); color: #8a6b1e; }
+  .status-penalty { background: rgba(139, 58, 58, 0.15); color: var(--accent); }
+  .module-row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 12px;
+    padding: 7px 0;
+    border-bottom: 1px dotted var(--rule);
+    font-size: 13px;
+  }
+  .module-row:last-of-type { border-bottom: none; }
+  .module-row-label { color: var(--ink-soft); font-weight: 500; }
+  .module-row-value { font-family: 'JetBrains Mono', monospace; text-align: right; color: var(--ink); }
+  .module-row-value.positive { color: var(--positive); font-weight: 600; }
+  .module-row-value.negative { color: var(--negative); font-weight: 600; }
+  .module-risks {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--rule);
+    font-size: 12px;
+    color: var(--ink-soft);
+  }
+  .module-risks-label { font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; font-size: 10px; color: var(--muted); margin-bottom: 4px; }
+  .module-risks ul { list-style: none; padding: 0; }
+  .module-risks li { padding: 2px 0; padding-left: 12px; position: relative; }
+  .module-risks li::before {
+    content: '·';
+    position: absolute;
+    left: 0;
+    color: var(--accent);
+    font-weight: 700;
+  }
+
+  .module-assumptions {
+    margin-top: 12px;
+    padding: 10px 12px;
+    background: rgba(0, 0, 0, 0.02);
+    border-left: 2px solid var(--rule);
+    font-size: 11px;
+    color: var(--muted);
+    font-family: 'JetBrains Mono', monospace;
+    line-height: 1.5;
+  }
+
+  /* Tabs */
+  .tabs-bar {
+    display: flex;
+    gap: 2px;
+    border-bottom: 1px solid var(--rule);
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+  }
+  .tab-button {
+    background: none;
+    border: none;
+    padding: 12px 20px;
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--muted);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    transition: all 0.15s;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .tab-button:hover { color: var(--ink); }
+  .tab-button.active { color: var(--ink); border-bottom-color: var(--accent); }
+  .tab-instruction {
+    background: rgba(232, 213, 159, 0.25);
+    border-left: 3px solid var(--highlight);
+    padding: 12px 16px;
+    font-size: 13px;
+    color: var(--ink-soft);
+    margin-bottom: 20px;
+    font-style: italic;
+  }
+
+  /* Comparison table */
+  .comparison-table {
     width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    background: rgba(255, 255, 255, 0.5);
+    border: 1px solid var(--rule);
+  }
+  .comparison-table thead { background: var(--ink); color: var(--paper); }
+  .comparison-table th {
+    text-align: left;
+    padding: 12px 16px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .comparison-table th.num, .comparison-table td.num { text-align: right; font-family: 'JetBrains Mono', monospace; }
+  .comparison-table tr { border-bottom: 1px solid var(--rule); }
+  .comparison-table tr:hover { background: rgba(0, 0, 0, 0.02); }
+  .comparison-table tbody tr:last-child { border-bottom: none; }
+  .comparison-table td { padding: 11px 16px; }
+  .rank-cell {
+    width: 32px;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--muted);
+    font-size: 12px;
+  }
+
+  /* Narrowing section */
+  .narrowing-card {
+    background: var(--ink);
+    color: var(--paper);
+    padding: 32px;
+    border-radius: 2px;
+  }
+  .narrowing-card .section-label { color: var(--highlight); }
+  .narrowing-card .section-label::before { background: var(--highlight); }
+  .narrowing-card .block-title { color: var(--paper); }
+  .narrowing-text {
+    font-family: 'Fraunces', serif;
+    font-size: 19px;
+    line-height: 1.5;
+    color: rgba(245, 241, 232, 0.92);
+    margin-bottom: 20px;
+  }
+  .narrowing-options {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+    margin-top: 24px;
+  }
+  .narrowing-option {
+    background: rgba(245, 241, 232, 0.08);
+    border-left: 2px solid var(--highlight);
+    padding: 14px 18px;
+  }
+  .narrowing-option-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--highlight);
+    margin-bottom: 4px;
+    font-weight: 600;
+  }
+  .narrowing-option-name {
+    font-family: 'Fraunces', serif;
+    font-size: 17px;
+    color: var(--paper);
+    margin-bottom: 4px;
+  }
+  .narrowing-option-detail { font-size: 12px; color: rgba(245, 241, 232, 0.7); }
+
+  /* Execution */
+  .execution-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 20px;
+  }
+  .execution-card {
+    background: rgba(255, 255, 255, 0.5);
+    border: 1px solid var(--rule);
+    padding: 22px;
+  }
+  .execution-card-header {
+    font-family: 'Fraunces', serif;
+    font-size: 18px;
+    margin-bottom: 12px;
+    color: var(--ink);
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--rule);
+  }
+  .provider-row {
+    padding: 12px 0;
+    border-bottom: 1px dotted var(--rule);
+  }
+  .provider-row:last-child { border-bottom: none; }
+  .provider-name {
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 4px;
+    font-size: 14px;
+  }
+  .provider-use { font-size: 12px; color: var(--muted); font-style: italic; }
+  .provider-tag {
+    display: inline-block;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    padding: 2px 8px;
+    background: var(--paper-warm);
+    border-radius: 2px;
+    margin-right: 6px;
+    color: var(--ink-soft);
+    font-weight: 600;
+  }
+  .provider-tag.existing { background: var(--ink); color: var(--paper); }
+
+  /* Validation questions */
+  .questions-list {
+    background: rgba(255, 255, 255, 0.5);
+    border: 1px solid var(--rule);
+    padding: 24px 28px;
+  }
+  .questions-list ol { list-style: none; counter-reset: q; padding: 0; }
+  .questions-list li {
+    counter-increment: q;
+    padding: 14px 0 14px 50px;
+    position: relative;
+    border-bottom: 1px solid var(--rule);
+    font-size: 15px;
+    line-height: 1.5;
+    color: var(--ink-soft);
+  }
+  .questions-list li:last-child { border-bottom: none; }
+  .questions-list li::before {
+    content: counter(q, decimal-leading-zero);
+    position: absolute;
+    left: 0;
+    top: 14px;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--accent);
+    font-weight: 600;
+    font-size: 13px;
+  }
+
+  /* JSON capture */
+  .json-block {
+    background: var(--ink);
+    color: var(--paper);
+    padding: 20px;
+    overflow-x: auto;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    line-height: 1.6;
+    border-radius: 2px;
+    max-height: 400px;
+    overflow-y: auto;
+  }
+  .json-toggle {
+    background: var(--ink-soft);
+    color: var(--paper);
+    border: none;
+    padding: 10px 18px;
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    cursor: pointer;
+    font-weight: 600;
+  }
+
+  /* Disclaimer */
+  .disclaimer-bar {
+    background: var(--ink);
+    color: rgba(245, 241, 232, 0.85);
+    padding: 24px 0;
+    font-size: 13px;
+    line-height: 1.6;
+  }
+  .disclaimer-bar strong { color: var(--paper); }
+  .disclaimer-bar a { color: var(--highlight); text-decoration: underline; }
+
+  footer.site-footer {
+    background: var(--ink);
+    color: rgba(245, 241, 232, 0.7);
+    padding: 32px 0;
+    font-size: 12px;
     text-align: center;
-    font-size: 8px;
-    color: #555;
+  }
+  footer.site-footer .footer-brand {
+    font-family: 'Fraunces', serif;
+    color: var(--paper);
+    margin-bottom: 4px;
+    font-size: 14px;
+  }
+
+  /* Currency exposure visualization */
+  .fx-bar {
+    display: flex;
+    height: 8px;
+    border-radius: 2px;
+    overflow: hidden;
+    margin-top: 4px;
+    border: 1px solid var(--rule);
+  }
+  .fx-segment-huf { background: var(--accent); }
+  .fx-segment-eur { background: var(--ink-soft); }
+  .fx-segment-usd { background: var(--highlight); }
+  .fx-legend { display: flex; gap: 12px; font-size: 11px; color: var(--muted); margin-top: 4px; }
+  .fx-legend-item { display: flex; align-items: center; gap: 4px; }
+  .fx-swatch { width: 8px; height: 8px; border-radius: 1px; }
+
+  /* Loading */
+  .computing {
+    text-align: center;
+    padding: 64px 24px;
+    font-family: 'Fraunces', serif;
+    font-size: 22px;
+    color: var(--muted);
+    font-style: italic;
   }
 </style>
 </head>
 <body>
+<div id="root"></div>
 
-<div id="wrap">
-  <div id="stage">
-    <canvas id="game" width="624" height="624"></canvas>
-    <div id="overlay">
-      <h2 id="ovTitle">GAME OVER</h2>
-      <p id="ovSub">Press ENTER to play again</p>
-    </div>
-  </div>
-  <div id="side">
-    <h1>TANK · 1990</h1>
-    <div class="row" style="color:#fff">CONTROLS</div>
-    <div class="row"><span class="key">↑↓←→</span> move</div>
-    <div class="row"><span class="key">SPACE</span> fire</div>
-    <div class="row"><span class="key">P</span> pause</div>
-    <div class="row"><span class="key">ENTER</span> start / next</div>
-    <hr style="border-color:#333; margin:14px 0;">
-    <div class="row" style="color:#fff">MISSION</div>
-    <div class="row" style="font-size:9px; line-height:1.7; color:#aaa;">
-      Defend the eagle.<br>
-      Destroy all 20 enemy tanks per stage.<br>
-      Watch for power-ups (blinking tanks).
-    </div>
-    <hr style="border-color:#333; margin:14px 0;">
-    <div class="row" style="color:#fff">POWER-UPS</div>
-    <div class="row" style="font-size:9px; color:#aaa;">★ — upgrade gun</div>
-    <div class="row" style="font-size:9px; color:#aaa;">⛨ — shield 10s</div>
-    <div class="row" style="font-size:9px; color:#aaa;">⏱ — freeze enemies</div>
-    <div class="row" style="font-size:9px; color:#aaa;">⛏ — fortify base</div>
-    <div class="row" style="font-size:9px; color:#aaa;">💣 — destroy all</div>
-    <div class="row" style="font-size:9px; color:#aaa;">♥ — extra life</div>
-  </div>
-</div>
+<script type="text/babel" data-presets="react">
+const { useState, useMemo, useRef } = React;
 
-<footer>A tribute to Battle City (1985, Namco) · built for fun</footer>
+// =========================================================================
+// MARKET STATE SNAPSHOT (from spec Section 0, refreshed with current data)
+// =========================================================================
+const MARKET_STATE = {
+  asOfDate: "2026.05.09",
+  mnbAlapkamat: 6.25,
+  onBetetiKamat: 5.25,
+  onHitelkamat: 7.25,
+  kshInflationYoY: 1.8, // March 2026 print (corrected from spec's stale Jan 2026 figure)
+  kshInflationYoYAsOf: "2026.03",
+  mnbForecast2026: 3.2,
+  mnbForecast2027: 3.3,
+  fxHufEur: 362,
+  fxHufUsd: 342,
+  // ÁKK retail series
+  fixmapRate: 6.50,
+  fixmapTerm: 5,
+  mapPlusFirstYearRate: 7.39,
+  bmpapIndicativeRate: 5.75,
+  pmpapPremium: 0.50,
+  prevYearInflation: 4.4, // for PMÁP year 1 reference
+  dkj12mRate: 5.50,
+  dkj6mRate: 5.40,
+  dkj3mRate: 5.30,
+  emapEuriborRate: 2.30,
+  emapPremium: 0.75,
+  babakotvenyPremium: 3.0,
+  // Best available rates (top 3, summary)
+  bestHufDepositRate: 5.50, // promotional, new money
+  bestEurDepositRate: 2.30,
+  bestUsdDepositRate: 3.74,
+  // Source verification
+  lastVerified: "2026.05.09",
+};
 
-<script>
-/* =========================================================
-   TANK 1990 — Battle City tribute
-   Single-file canvas game. ~13x13 tiles per playfield,
-   3 sub-tiles per terrain block (so bricks can be partially
-   chewed away exactly like the original).
-   ========================================================= */
-
-const canvas = document.getElementById('game');
-const ctx = canvas.getContext('2d');
-ctx.imageSmoothingEnabled = false;
-
-// ---------- constants ----------
-const TILE = 16;            // logical tile (sub-cell)
-const FIELD = 26;           // 26x26 sub-cells = 13x13 brick blocks
-const SCALE = canvas.width / (FIELD * TILE); // visual scale
-const PX = TILE * SCALE;    // visual pixels per sub-cell
-
-// terrain ids
-const T_EMPTY = 0;
-const T_BRICK = 1;
-const T_STEEL = 2;
-const T_WATER = 3;
-const T_FOREST = 4;
-const T_ICE = 5;
-const T_BASE = 6;          // eagle (only at base location)
-
-// directions
-const D_UP = 0, D_RIGHT = 1, D_DOWN = 2, D_LEFT = 3;
-const DX = [0, 1, 0, -1];
-const DY = [-1, 0, 1, 0];
-
-// ---------- input ----------
-const keys = {};
-addEventListener('keydown', e => {
-  if (['ArrowUp','ArrowDown','ArrowLeft','ArrowRight',' '].includes(e.key)) e.preventDefault();
-  keys[e.key] = true;
-  if (e.key === 'Enter') handleEnter();
-  if (e.key === 'p' || e.key === 'P') togglePause();
-});
-addEventListener('keyup',   e => { keys[e.key] = false; });
-
-// ---------- stages ----------
-// Compact level encoding: 13x13 grid of blocks.
-// Each block is 2x2 sub-cells. Steel/water/forest/ice take whole block.
-// Bricks are individual sub-cells but laid out by block too here.
-// Symbols: . empty  B brick  S steel  W water  F forest  I ice
-// Base is auto-placed at bottom center.
-const STAGES = [
-  // stage 1 — classic intro
-  [
-    ".............",
-    ".BBB.BBB.BBB.",
-    ".BBB.BBB.BBB.",
-    ".BBB.BBB.BBB.",
-    "....BBB......",
-    "BB..BBB..BBBB",
-    "B...........B",
-    "B....SSS....B",
-    "BB...SBS...BB",
-    ".BB...B...BB.",
-    "..BB.....BB..",
-    "...BB.B.BB...",
-    "...BB.B.BB...",
+// =========================================================================
+// PROVIDER UNIVERSE (Section 14.1)
+// =========================================================================
+const PROVIDERS = {
+  tbsz: [
+    { id: "lightyear", name: "Lightyear", tbszFee: 0, etfFee: 0, fxSpread: 0.35, friction: "low", notes_hu: "App-alapú, alacsony belépési küszöb. NAV-bevallást a felhasználó tölti ki (30 nap).", notes_en: "App-based, low onboarding friction. User files NAV declaration (30d)." },
+    { id: "ibkr", name: "Interactive Brokers", tbszFee: 0, etfFee: 0.05, fxSpread: 0.002, friction: "high", notes_hu: "Legolcsóbb díjszerkezet, legszélesebb termékkör. Magasabb KYC, NAV-bevallás önállóan.", notes_en: "Cheapest fees overall, broadest universe. Heavier KYC, self-files NAV." },
+    { id: "erste", name: "Erste Invest", tbszFee: 0, etfFee: 0.35, fxSpread: 2.0, friction: "medium", notes_hu: "Bank-csatorna, automatikus NAV-bevallás, banki integráció.", notes_en: "Bank channel, auto-files NAV declaration, banking integration." },
+    { id: "kh", name: "K&H", tbszFee: 0, etfFee: 0.30, fxSpread: 1.8, friction: "medium", notes_hu: "Szélesebb ETF-választék mint az Erste-nél. Automatikus NAV-bevallás.", notes_en: "Broader ETF list than Erste. Auto-files NAV." },
+    { id: "concorde", name: "Concorde", tbszFee: 0, etfFee: 0.20, fxSpread: 1.0, friction: "medium", notes_hu: "Bróker-direkt, aktív kereskedéshez. Magyar nyelvű platform.", notes_en: "Broker-direct, suited to active trading. Hungarian platform." },
   ],
-  // stage 2 — water mid
-  [
-    ".............",
-    "BB.BBB.BBB.BB",
-    "BB.BBB.BBB.BB",
-    ".............",
-    ".WWW.....WWW.",
-    ".WWW..S..WWW.",
-    "......S......",
-    ".WWW..S..WWW.",
-    ".WWW.....WWW.",
-    ".............",
-    "BB.BBB.BBB.BB",
-    "BB.BBB.BBB.BB",
-    ".....B.B.....",
+  akkChannels: [
+    { id: "webkincstar", name: "WebKincstár", fee: 0, notes_hu: "Államkincstár-direkt, online. Legolcsóbb csatorna.", notes_en: "Government-direct, online. Cheapest channel." },
+    { id: "bank", name: "Banki csatorna (Erste/K&H/OTP)", fee: 0.5, notes_hu: "Kényelmes, ha már van banki kapcsolat. ~0,5% díj.", notes_en: "Convenient if user already banks here. ~0.5% fee." },
+    { id: "posta", name: "Magyar Posta", fee: 0.75, notes_hu: "Személyes ügyintézés, idősebb felhasználóknak.", notes_en: "In-person option, useful for older users." },
   ],
-  // stage 3 — forest cover + ice
-  [
-    ".............",
-    ".FFF.FFF.FFF.",
-    ".FFF.FFF.FFF.",
-    "..B.......B..",
-    "..B.IIIII.B..",
-    "..B.I...I.B..",
-    "....I.S.I....",
-    "..B.I...I.B..",
-    "..B.IIIII.B..",
-    "..B.......B..",
-    ".FFF.FFF.FFF.",
-    ".FFF.FFF.FFF.",
-    "...B.B.B.B...",
+  fxCash: [
+    { id: "wise", name: "Wise", eurRate: 2.0, usdRate: 3.5, fxSpread: 0.5, notes_hu: "Legjobb multi-devizás UX. Szűk FX-spread.", notes_en: "Best multi-currency UX. Tight FX spreads." },
+    { id: "lightyear-cash", name: "Lightyear (általános számla)", eurRate: 2.2, usdRate: 3.74, fxSpread: 0.35, notes_hu: "Jelenleg a legmagasabb USD-kamat. TBSZ-en kívül.", notes_en: "Highest USD rate currently observed. Outside TBSZ." },
+    { id: "ibkr-cash", name: "IBKR uninvested cash", eurRate: 1.47, usdRate: 3.14, fxSpread: 0.002, notes_hu: "Interbank FX, intézményi kamatok. Nagyobb tételeknél előnyös.", notes_en: "Interbank FX, institutional rates. Best at scale." },
   ],
-  // stage 4 — corridors & steel maze
-  [
-    "S...........S",
-    "S.BBBBBBBBB.S",
-    "S.B.......B.S",
-    "S.B.SSSSS.B.S",
-    "S.B.S...S.B.S",
-    "...S.W.S.....",
-    "...S.W.S.....",
-    "...S.W.S.....",
-    "S.B.S...S.B.S",
-    "S.B.SSSSS.B.S",
-    "S.B.......B.S",
-    "S.BBBBBBBBB.S",
-    "S....B.B....S",
-  ],
-  // stage 5 — brick fortress with funnels
-  [
-    "BBBB.....BBBB",
-    "B..B.....B..B",
-    "B..B.III.B..B",
-    "B...........B",
-    "....B.S.B....",
-    "WW..B.S.B..WW",
-    "....B.S.B....",
-    "WW..B.S.B..WW",
-    "....B.S.B....",
-    "B...........B",
-    "B..F.....F..B",
-    "B..F..B..F..B",
-    "BBBB.....BBBB",
-  ],
+};
+
+// =========================================================================
+// TRANSLATIONS
+// =========================================================================
+const T = {
+  hu: {
+    brand: "markin.hu",
+    brandTag: "Mai döntés",
+    heroHeadline: "Mit kezdj a pénzeddel — <em>ma</em>.",
+    heroLede: "Egy magyar lakossági befektető számára elérhető összes reális opciót összehasonlítja, a mai piaci állapot szerint. Nem ad tanácsot — bemutatja, mit ad a számolás.",
+    heroSnapshotLabel: "Piaci pillanatkép",
+    heroDate: "2026. május 9.",
+    heroAlapkamat: "MNB alapkamat",
+    heroInflation: "KSH infláció (YoY)",
+    heroFix: "FixMÁP aktuális",
+    sectionInputs: "Bemenetek",
+    inputsTitle: "Helyzeted leírása",
+    inputsIntro: "Tölts ki minden mezőt egyszerre. Az adataidat soha nem küldjük el sehová — minden számítás a böngésződben fut.",
+    fieldAmount: "Elhelyezhető tőke",
+    fieldCurrency: "Pénznem",
+    fieldHorizon: "Időtáv (év)",
+    fieldRisk: "Kockázattűrés",
+    fieldResidency: "Adóügyi illetőség",
+    fieldSzja: "Van az évben fizetendő SZJA-d?",
+    fieldChild: "Van 18 év alatti gyereked?",
+    riskConservative: "Tőkemegőrzés",
+    riskModerate: "Kiegyensúlyozott",
+    riskGrowth: "Növekedés-orientált",
+    optionalToggle: "További adatok (pontosabb elemzéshez)",
+    fieldTbsz: "Meglévő TBSZ",
+    fieldNyesz: "Meglévő NYESZ",
+    fieldFxPref: "FX-preferencia",
+    fieldFriction: "Mennyit hajlandó vagy bonyolódni?",
+    submit: "Elemzés futtatása",
+    submitNote: "Az elemzés kb. 1–2 másodpercet vesz igénybe a böngésződben.",
+    none: "Nincs",
+    yes: "Igen",
+    no: "Nem",
+    huOnly: "Csak HUF",
+    eurOk: "EUR rendben",
+    usdOk: "USD rendben",
+    multi: "Több deviza",
+    low: "Alacsony",
+    medium: "Közepes",
+    highOk: "Magas",
+    // Results
+    sectionResults: "Elemzés",
+    inputsRestated: "Bemenetek megerősítése",
+    marketSnapshot: "Piaci pillanatkép",
+    modulesByModule: "Opciók egyenként",
+    penalties: "Összehasonlító referenciák",
+    penaltiesIntro: "Ezek nem ajánlások — azt mutatják meg, mennyivel veszítenél a magyar adóhatékony opciókhoz képest, ha ezeket választanád.",
+    fourViews: "Négy szempont",
+    fourViewsIntro: "Ugyanazok az opciók, négy különböző rendezésben. Te választasz nézőpontot — a kalkulátor nem rangsorol egyetlen szempont szerint sem alapértelmezésben.",
+    narrowing: "Mire szűkül",
+    execution: "Kivitelezés",
+    executionIntro: "Ha az egyik opcióval mennél tovább, ezek az elérhető szolgáltatók. Nem rangsoroljuk őket — különböző felhasználói preferenciákra különböző opciók illenek.",
+    validationQuestions: "Magadnak felteendő kérdések",
+    validationIntro: "A számítás megmutatja, hogyan teljesít minden opció. A döntéshez azonban néhány kérdést magadnak kell megválaszolnod.",
+    jsonCapture: "Teszteset-rögzítés (JSON)",
+    jsonNote: "Strukturált rögzítés a motor egységtesztjeihez. Ez lesz az adott helyzet 'igazságalapja' a Phase B implementációhoz.",
+    showJson: "JSON megjelenítése",
+    hideJson: "JSON elrejtése",
+    // Module fields
+    eligibilityYes: "Választható",
+    eligibilityNo: "Nem választható",
+    eligibilityWarning: "Választható (figyelmeztetéssel)",
+    eligibilityRef: "Referencia (penalty)",
+    expectedReturn: "Várható hozam",
+    netValue: "Nettó érték",
+    taxOwed: "Adó",
+    netReturnPct: "Nettó hozam",
+    liquidity: "Likviditás",
+    fxExposure: "Devizakitettség",
+    riskRating: "Kockázat",
+    topRisks: "Top 3 kockázat",
+    assumptions: "Feltételezések",
+    // Comparison views
+    viewByReturn: "Hozam szerint",
+    viewByLiquidity: "Likviditás szerint",
+    viewByTax: "Adó szerint",
+    viewByRisk: "Kockázat szerint",
+    pickLensInstruction: "Válassz egy szempontot az alsó sávon. Egyik sem alapértelmezett — a döntés rajtad áll.",
+    tableHeaderModule: "Opció",
+    tableHeaderValue: "Nettó érték",
+    tableHeaderReturn: "Hozam",
+    tableHeaderRange: "Tartomány",
+    tableHeaderExit: "Kilépés ideje",
+    tableHeaderPenalty: "Büntetés",
+    tableHeaderRating: "Rangsor",
+    tableHeaderTaxRate: "Effektív adó",
+    tableHeaderTaxOwed: "Adó (Ft)",
+    tableHeaderVol: "Volatilitás",
+    tableHeaderDrawdown: "Max. visszaesés",
+    // Validation question fallbacks
+    disclaimer: "Ez a kalkuláció modellezés, nem befektetési tanácsadás. A döntést Te hozod meg. Az adatok és feltételezések a piaci helyzetre és a hatályos szabályozásra a megadott dátumon vonatkoznak, és változhatnak.",
+    disclaimerStrong: "Nem befektetési tanácsadás.",
+    footer: "Modellező eszköz lakossági befektetőknek — © 2026 markin.hu",
+    yourLanguage: "magyar",
+    otherLanguage: "english",
+    // Risk rating labels
+    risk1: "Legalacsonyabb",
+    risk2: "Alacsony",
+    risk3: "Közepes",
+    risk4: "Magas",
+    risk5: "Nagyon magas",
+    // Liquidity labels
+    liq1: "Lekötött",
+    liq2: "Büntetés / adó",
+    liq3: "T+2, adóköteles",
+    liq4: "T+1, ≤1% büntetés",
+    liq5: "Azonnali",
+    waitOption: "Várj és értékeld újra 30 nap múlva",
+    waitReason: "Ok",
+    units: "Ft",
+    years: "év",
+    pct: "%",
+  },
+  en: {
+    brand: "markin.hu",
+    brandTag: "Today's decision",
+    heroHeadline: "What to do with your money — <em>today</em>.",
+    heroLede: "Compares every realistic option available to a Hungarian retail investor, against current market state. It does not advise — it shows what the math gives.",
+    heroSnapshotLabel: "Market snapshot",
+    heroDate: "May 9, 2026",
+    heroAlapkamat: "MNB base rate",
+    heroInflation: "KSH inflation (YoY)",
+    heroFix: "FixMÁP current",
+    sectionInputs: "Inputs",
+    inputsTitle: "Your situation",
+    inputsIntro: "Fill in all fields at once. Your data never leaves your browser — every calculation runs locally.",
+    fieldAmount: "Amount to deploy",
+    fieldCurrency: "Currency",
+    fieldHorizon: "Horizon (years)",
+    fieldRisk: "Risk tolerance",
+    fieldResidency: "Tax residency",
+    fieldSzja: "Do you have SZJA payable this year?",
+    fieldChild: "Do you have a child under 18?",
+    riskConservative: "Conservative",
+    riskModerate: "Moderate",
+    riskGrowth: "Growth-seeking",
+    optionalToggle: "More detail (improves precision)",
+    fieldTbsz: "Existing TBSZ",
+    fieldNyesz: "Existing NYESZ",
+    fieldFxPref: "FX preference",
+    fieldFriction: "Friction tolerance",
+    submit: "Run analysis",
+    submitNote: "Analysis takes ~1–2 seconds in your browser.",
+    none: "None",
+    yes: "Yes",
+    no: "No",
+    huOnly: "HUF only",
+    eurOk: "EUR ok",
+    usdOk: "USD ok",
+    multi: "Multi-currency",
+    low: "Low",
+    medium: "Medium",
+    highOk: "High ok",
+    sectionResults: "Analysis",
+    inputsRestated: "Inputs restated",
+    marketSnapshot: "Market snapshot",
+    modulesByModule: "Options, module by module",
+    penalties: "Comparison references",
+    penaltiesIntro: "These are not recommendations — they show what you would give up vs the tax-efficient Hungarian options if you chose these instead.",
+    fourViews: "Four views",
+    fourViewsIntro: "The same options, sorted four different ways. You pick the lens — the tool does not pre-rank by any single dimension.",
+    narrowing: "What this narrows to",
+    execution: "Execution",
+    executionIntro: "If you proceed with one of these options, here are the available providers. We don't rank them — different user preferences match different providers.",
+    validationQuestions: "Questions to ask yourself",
+    validationIntro: "The math shows how each option performs. To decide, however, you'll need to answer a few questions for yourself.",
+    jsonCapture: "Test case capture (JSON)",
+    jsonNote: "Structured capture for engine unit tests. This becomes the ground truth for this scenario in Phase B implementation.",
+    showJson: "Show JSON",
+    hideJson: "Hide JSON",
+    eligibilityYes: "Eligible",
+    eligibilityNo: "Not eligible",
+    eligibilityWarning: "Eligible (with caveat)",
+    eligibilityRef: "Reference (penalty)",
+    expectedReturn: "Expected return",
+    netValue: "Net value",
+    taxOwed: "Tax",
+    netReturnPct: "Net return",
+    liquidity: "Liquidity",
+    fxExposure: "FX exposure",
+    riskRating: "Risk",
+    topRisks: "Top 3 risks",
+    assumptions: "Assumptions",
+    viewByReturn: "By return",
+    viewByLiquidity: "By liquidity",
+    viewByTax: "By tax efficiency",
+    viewByRisk: "By risk",
+    pickLensInstruction: "Pick a lens from the tabs above. None is selected by default — the decision is yours.",
+    tableHeaderModule: "Option",
+    tableHeaderValue: "Net value",
+    tableHeaderReturn: "Return",
+    tableHeaderRange: "Range",
+    tableHeaderExit: "Exit time",
+    tableHeaderPenalty: "Penalty",
+    tableHeaderRating: "Rating",
+    tableHeaderTaxRate: "Effective tax",
+    tableHeaderTaxOwed: "Tax (HUF)",
+    tableHeaderVol: "Volatility",
+    tableHeaderDrawdown: "Max drawdown",
+    disclaimer: "This calculation is modeling, not investment advice. The decision is yours. Data and assumptions reflect the market state and applicable regulation on the specified date and may change.",
+    disclaimerStrong: "Not investment advice.",
+    footer: "Modeling tool for retail investors — © 2026 markin.hu",
+    yourLanguage: "english",
+    otherLanguage: "magyar",
+    risk1: "Lowest",
+    risk2: "Low",
+    risk3: "Medium",
+    risk4: "High",
+    risk5: "Very high",
+    liq1: "Locked",
+    liq2: "Penalty / tax exit",
+    liq3: "T+2, taxable",
+    liq4: "T+1, ≤1% penalty",
+    liq5: "Instant",
+    waitOption: "Wait and re-evaluate in 30 days",
+    waitReason: "Reason",
+    units: "HUF",
+    years: "y",
+    pct: "%",
+  }
+};
+
+// =========================================================================
+// MODULE DEFINITIONS (catalogue per Section 2)
+// =========================================================================
+const MODULES = [
+  { id: "tbsz_vwce", num: "01", name_hu: "TBSZ + VWCE", name_en: "TBSZ + VWCE", sub_hu: "Széles piaci akciós ETF, adóhatékony köpenyben", sub_en: "Broad equity ETF in tax-efficient wrapper" },
+  { id: "tbsz_aggh", num: "02", name_hu: "TBSZ + AGGH", name_en: "TBSZ + AGGH", sub_hu: "EUR-hedgelt globális kötvény ETF, adóhatékony köpenyben", sub_en: "EUR-hedged global bond ETF in tax-efficient wrapper" },
+  { id: "nyesz", num: "03", name_hu: "NYESZ", name_en: "NYESZ", sub_hu: "Nyugdíj-előtakarékossági számla, 20% SZJA-visszatérítéssel", sub_en: "Retirement savings account with 20% SZJA rebate" },
+  { id: "fixmap", num: "04", name_hu: "FixMÁP", name_en: "FixMÁP", sub_hu: "Fix kamatozású állampapír", sub_en: "Fixed-rate government bond" },
+  { id: "pmap", num: "05", name_hu: "PMÁP", name_en: "PMÁP", sub_hu: "Inflációkövető állampapír", sub_en: "Inflation-linked government bond" },
+  { id: "map_plus", num: "06", name_hu: "MÁP+", name_en: "MÁP+", sub_hu: "Sávos kamatozású, kamatozó állampapír", sub_en: "Stepped-rate capitalizing government bond" },
+  { id: "bmap", num: "07", name_hu: "BMÁP", name_en: "BMÁP", sub_hu: "DKJ-követő változó kamatozású állampapír", sub_en: "DKJ-linked floating-rate government bond" },
+  { id: "dkj", num: "08", name_hu: "DKJ", name_en: "DKJ", sub_hu: "Diszkont Kincstárjegy, rövid lejáratú", sub_en: "Discount Treasury Bill, short-term" },
+  { id: "emap", num: "09", name_hu: "EMÁP", name_en: "EMÁP", sub_hu: "EUR-denominált változó kamatozású állampapír", sub_en: "EUR-denominated floating government bond" },
+  { id: "babakotveny", num: "10", name_hu: "Babakötvény", name_en: "Babakötvény", sub_hu: "Gyermek-megtakarítás, állami támogatással", sub_en: "Child savings with state subsidy" },
+  { id: "huf_cash", num: "11", name_hu: "HUF készpénz / lekötés", name_en: "HUF cash / deposit", sub_hu: "Legjobb elérhető HUF betéti kamat", sub_en: "Best available HUF deposit rate" },
+  { id: "fx_cash", num: "12", name_hu: "EUR/USD készpénz", name_en: "EUR/USD cash", sub_hu: "Devizás megtakarítás, legjobb elérhető kamattal", sub_en: "FX cash at best available rate" },
+  { id: "wait", num: "13", name_hu: "Várj 30 napot", name_en: "Wait 30 days", sub_hu: "Tartsd készpénzben, értékeld újra később", sub_en: "Hold in cash, re-evaluate later" },
 ];
 
-// ---------- world state ----------
-let world;          // 2D array [FIELD][FIELD] of terrain
-let player;
-let bullets = [];
-let enemies = [];
-let powerups = [];
-let particles = [];
-let explosions = [];
-let baseAlive = true;
-let baseFortifyTimer = 0;
-let freezeTimer = 0;
-let shieldTimer = 0;
-let stageIdx = 0;
-let score = 0;
-let highScore = 5000;
-let lives = 3;
-let enemiesLeft;     // total to spawn this stage
-let enemiesActive;   // currently on field
-let spawnTimer = 0;
-let spawnPoints;
-let spawnIdx = 0;
-let state = 'menu';  // menu | play | paused | stageclear | gameover | win
-let gameOverTimer = 0;
-let stageClearTimer = 0;
-let intermissionTimer = 0;
-let baseFlash = 0;
-let killsByType = [0,0,0,0]; // basic, fast, power, armor
-let stageStats;
+const PENALTY_MODULES = [
+  { id: "p1_no_tbsz", num: "P1", name_hu: "Revolut/Trading 212 (TBSZ nélkül)", name_en: "Revolut/Trading 212 (no TBSZ)", sub_hu: "Ugyanaz az ETF, adó-előny nélkül", sub_en: "Same ETF, no tax wrapper" },
+  { id: "p2_etoro", num: "P2", name_hu: "eToro CopyTrader", name_en: "eToro CopyTrader", sub_hu: "Spread és adó halmozott költséggel", sub_en: "Spread + tax compounded cost" },
+  { id: "p3_standard_deposit", num: "P3", name_hu: "Sztenderd banki betét", name_en: "Standard bank deposit", sub_hu: "Nem promóciós, 28% adó", sub_en: "Non-promotional, 28% tax" },
+];
 
-// base location (bottom center, 2x2 block)
-const BASE_X = 12, BASE_Y = 24; // sub-cell coords (block 6,12 => sub 12,24)
+// =========================================================================
+// HELPER FUNCTIONS
+// =========================================================================
+function fmtHuf(n, lang) {
+  if (n == null || isNaN(n)) return "—";
+  const formatter = new Intl.NumberFormat('hu-HU', { maximumFractionDigits: 0 });
+  return formatter.format(Math.round(n)) + " Ft";
+}
+function fmtPct(n, lang, digits = 2) {
+  if (n == null || isNaN(n)) return "—";
+  const v = (n * 100).toFixed(digits);
+  return lang === 'hu' ? v.replace('.', ',') + " %" : v + "%";
+}
+function fmtNum(n, lang, digits = 0) {
+  if (n == null || isNaN(n)) return "—";
+  const v = n.toFixed(digits);
+  return lang === 'hu' ? v.replace('.', ',') : v;
+}
+function convertToHuf(amount, currency) {
+  if (currency === "HUF") return amount;
+  if (currency === "EUR") return amount * MARKET_STATE.fxHufEur;
+  if (currency === "USD") return amount * MARKET_STATE.fxHufUsd;
+  return amount;
+}
 
-// player spawn point
-const PLAYER_SPAWN = { x: 8, y: 24 };
+// TBSZ tax bracket — gyűjtőév-based (Vadim's correction from review)
+// Deposits in calendar year N constitute gyűjtőév N.
+// Tax bracket transitions occur at end of N+3 (10% bracket) and end of N+5 (0%).
+// For modeling purposes, given horizon_years from "today":
+// - if horizon < ~3 years from end of current year: 28%
+// - if 3-5 years: 10%
+// - if 5+ years: 0%
+// Refined: we model as if today is mid-year and the gyűjtőév is current calendar year.
+function tbszTaxRate(horizonYears) {
+  // Conservative approximation: time until end-of-year ~0.5y, then 3y to 10%, 5y to 0%
+  const effectiveYearsFromGyujtoevEnd = horizonYears - 0.5;
+  if (effectiveYearsFromGyujtoevEnd >= 5) return 0;
+  if (effectiveYearsFromGyujtoevEnd >= 3) return 0.10;
+  return 0.28;
+}
 
-// ---------- audio (tiny synth) ----------
-const Audio = (() => {
-  let ctxA = null;
-  function ensure() { if (!ctxA) ctxA = new (window.AudioContext || window.webkitAudioContext)(); return ctxA; }
-  function beep(freq, dur=0.05, type='square', vol=0.05) {
-    try {
-      const a = ensure();
-      const o = a.createOscillator();
-      const g = a.createGain();
-      o.type = type; o.frequency.value = freq;
-      g.gain.value = vol;
-      o.connect(g); g.connect(a.destination);
-      o.start();
-      g.gain.exponentialRampToValueAtTime(0.0001, a.currentTime + dur);
-      o.stop(a.currentTime + dur);
-    } catch(e) {}
-  }
-  return {
-    fire:    () => beep(880, 0.04, 'square', 0.04),
-    hitWall: () => beep(180, 0.05, 'square', 0.05),
-    boom:    () => { beep(120, 0.1, 'sawtooth', 0.07); setTimeout(()=>beep(80, 0.15, 'sawtooth', 0.06), 30); },
-    pickup:  () => { beep(660, 0.05); setTimeout(()=>beep(880, 0.05), 60); setTimeout(()=>beep(1320, 0.07), 120); },
-    spawn:   () => beep(440, 0.03, 'triangle', 0.03),
-    death:   () => { beep(220, 0.2, 'sawtooth', 0.06); setTimeout(()=>beep(110, 0.3, 'sawtooth', 0.07), 80); },
-    gameover:() => { [440, 330, 220, 110].forEach((f,i)=>setTimeout(()=>beep(f, 0.25, 'square', 0.06), i*200)); },
-    stage:   () => { [330, 440, 550, 660].forEach((f,i)=>setTimeout(()=>beep(f, 0.1), i*80)); },
-  };
-})();
+// =========================================================================
+// ENGINE — calculate each module
+// =========================================================================
+function calculateModule(moduleId, inputs) {
+  const amountHuf = convertToHuf(inputs.amount, inputs.currency);
+  const h = inputs.horizon_years;
 
-// ---------- world building ----------
-function buildWorld(stage) {
-  world = Array.from({length: FIELD}, () => Array(FIELD).fill(T_EMPTY));
-  // block grid is 13x13, each block = 2x2 sub-cells
-  for (let by = 0; by < 13; by++) {
-    const row = stage[by] || "";
-    for (let bx = 0; bx < 13; bx++) {
-      const ch = row[bx] || ".";
-      let t = T_EMPTY;
-      if (ch === 'B') t = T_BRICK;
-      else if (ch === 'S') t = T_STEEL;
-      else if (ch === 'W') t = T_WATER;
-      else if (ch === 'F') t = T_FOREST;
-      else if (ch === 'I') t = T_ICE;
-      if (t === T_EMPTY) continue;
-      for (let dy = 0; dy < 2; dy++) {
-        for (let dx = 0; dx < 2; dx++) {
-          world[by*2+dy][bx*2+dx] = t;
-        }
+  switch (moduleId) {
+    case "tbsz_vwce": {
+      const ineligible = inputs.tax_residency !== "HU";
+      if (ineligible) return { eligible: false, reason_hu: "Nem magyar adóügyi illetőség", reason_en: "Non-HU tax residency" };
+
+      const warning = h < 3;
+      const nominalReturn = 0.0628; // 6.5% - 0.22% TER
+      const grossValue = amountHuf * Math.pow(1 + nominalReturn, h);
+      const grossGain = grossValue - amountHuf;
+      const taxRate = tbszTaxRate(h);
+      const tax = Math.max(0, grossGain * taxRate);
+      const fee = amountHuf * 0.0035; // assumed Lightyear baseline
+      const netValue = grossValue - tax - fee;
+      const lowGain = amountHuf * Math.pow(1 + 0.04, h) - amountHuf;
+      const highGain = amountHuf * Math.pow(1 + 0.09, h) - amountHuf;
+      const lowNet = amountHuf + lowGain * (1 - taxRate) - fee;
+      const highNet = amountHuf + highGain * (1 - taxRate) - fee;
+
+      return {
+        eligible: true,
+        warning: warning,
+        warning_hu: warning ? "3 évnél rövidebb tartás esetén a teljes 28% adó alkalmazandó" : null,
+        warning_en: warning ? "Holding under 3 years incurs full 28% tax on gains" : null,
+        netValue, lowNet, highNet,
+        taxRate, tax,
+        netReturnPct: netValue / amountHuf - 1,
+        annualizedReturn: Math.pow(netValue / amountHuf, 1 / h) - 1,
+        liquidity: taxRate === 0 ? 3 : 2,
+        fxExposure: { huf: 0, eur: 0, usd: 100 },
+        riskRating: 4,
+        risks_hu: ["Részvénypiaci volatilitás (~15–18% éves)", "USD/HUF árfolyamkockázat (5y: ±15%)", "TBSZ futamidő előtti kilépés adóhátrányt jelent"],
+        risks_en: ["Equity volatility (~15-18% annual)", "USD/HUF FX risk (5y: ±15%)", "Pre-maturity TBSZ exit incurs full tax"],
+        assumptions_hu: `Várható éves hozam (EUR): 6,5% (range 4,0–9,0%) | TER: 0,22% | Adósáv: ${(taxRate*100).toFixed(0)}% | Bróker díj: ~0,35% | FX: HUF/USD konstansnak modellezve | Volatilitás: ±15% range`,
+        assumptions_en: `Expected return (EUR): 6.5% (range 4.0-9.0%) | TER: 0.22% | Tax bracket: ${(taxRate*100).toFixed(0)}% | Broker fee: ~0.35% | FX: HUF/USD modeled constant | Volatility: ±15% range`,
+      };
+    }
+
+    case "tbsz_aggh": {
+      const ineligible = inputs.tax_residency !== "HU";
+      if (ineligible) return { eligible: false, reason_hu: "Nem magyar adóügyi illetőség", reason_en: "Non-HU tax residency" };
+
+      const warning = h < 3;
+      const nominalReturn = 0.029;
+      const grossValue = amountHuf * Math.pow(1 + nominalReturn, h);
+      const grossGain = grossValue - amountHuf;
+      const taxRate = tbszTaxRate(h);
+      const tax = Math.max(0, grossGain * taxRate);
+      const fee = amountHuf * 0.0035;
+      const netValue = grossValue - tax - fee;
+      const lowGain = amountHuf * Math.pow(1 + 0.02, h) - amountHuf;
+      const highGain = amountHuf * Math.pow(1 + 0.04, h) - amountHuf;
+      const lowNet = amountHuf + lowGain * (1 - taxRate) - fee;
+      const highNet = amountHuf + highGain * (1 - taxRate) - fee;
+
+      return {
+        eligible: true,
+        warning,
+        warning_hu: warning ? "3 évnél rövidebb tartás esetén a teljes 28% adó alkalmazandó" : null,
+        warning_en: warning ? "Holding under 3 years incurs full 28% tax on gains" : null,
+        netValue, lowNet, highNet,
+        taxRate, tax,
+        netReturnPct: netValue / amountHuf - 1,
+        annualizedReturn: Math.pow(netValue / amountHuf, 1 / h) - 1,
+        liquidity: taxRate === 0 ? 3 : 2,
+        fxExposure: { huf: 0, eur: 100, usd: 0 },
+        riskRating: 3,
+        risks_hu: ["Kötvénypiaci volatilitás (~5–7% éves)", "Kamatkockázat kötvény-újraárazáskor", "EUR-hedge magasabb költségvonatkozással"],
+        risks_en: ["Bond volatility (~5-7% annual)", "Rate risk on bond reset", "EUR-hedge carries cost"],
+        assumptions_hu: `Várható éves hozam (EUR): 2,9% | TER: 0,10% | EUR-hedge: az alapok kockázat-mentesítve | Adósáv: ${(taxRate*100).toFixed(0)}%`,
+        assumptions_en: `Expected return (EUR): 2.9% | TER: 0.10% | EUR-hedged: underlying FX-neutralized | Tax bracket: ${(taxRate*100).toFixed(0)}%`,
+      };
+    }
+
+    case "nyesz": {
+      if (!inputs.has_szja_payable) return { eligible: false, reason_hu: "Nincs fizetendő SZJA; a 20% visszatérítés nem érvényesíthető", reason_en: "No SZJA payable; 20% rebate cannot be claimed" };
+      if (h < 10) return { eligible: false, reason_hu: "NYESZ nyugdíjkorhatárig lekötve; az időtáv túl rövid", reason_en: "NYESZ locks until retirement; horizon too short" };
+      const rebate = Math.min(amountHuf * 0.20, 100000);
+      const effectiveCapital = amountHuf + rebate;
+      const nominalReturn = 0.065;
+      const grossValue = effectiveCapital * Math.pow(1 + nominalReturn, h);
+      const lowVal = effectiveCapital * Math.pow(1.04, h);
+      const highVal = effectiveCapital * Math.pow(1.09, h);
+
+      return {
+        eligible: true,
+        netValue: grossValue,
+        lowNet: lowVal,
+        highNet: highVal,
+        taxRate: 0,
+        tax: 0,
+        netReturnPct: grossValue / amountHuf - 1,
+        annualizedReturn: Math.pow(grossValue / amountHuf, 1 / h) - 1,
+        rebate,
+        liquidity: 1,
+        fxExposure: { huf: 0, eur: 0, usd: 100 },
+        riskRating: 4,
+        risks_hu: ["Nyugdíjkorhatár előtti kilépés esetén minden adóelőny elveszik + 20% büntetés", "Részvénypiaci volatilitás", "Szolgáltató-függő portfólióválasztás"],
+        risks_en: ["Pre-retirement exit forfeits all tax benefits + 20% penalty", "Equity volatility", "Provider-constrained portfolio choice"],
+        assumptions_hu: `20% állami visszatérítés (max 100 000 Ft/év) | Tartás nyugdíjkorhatárig: adómentes kivét | Várható hozam mint Modul 01`,
+        assumptions_en: `20% state rebate (max 100,000 HUF/year) | Held to retirement: tax-free withdrawal | Expected return as Module 01`,
+      };
+    }
+
+    case "fixmap": {
+      if (inputs.tax_residency !== "HU") return { eligible: false, reason_hu: "Nem magyar adóügyi illetőség", reason_en: "Non-HU tax residency" };
+      const rate = MARKET_STATE.fixmapRate / 100;
+      const compoundValue = amountHuf * Math.pow(1 + rate, h);
+      const earlyExitPenalty = amountHuf * 0.01;
+
+      return {
+        eligible: true,
+        netValue: compoundValue,
+        lowNet: compoundValue,
+        highNet: compoundValue,
+        taxRate: 0,
+        tax: 0,
+        netReturnPct: compoundValue / amountHuf - 1,
+        annualizedReturn: rate,
+        liquidity: 4,
+        fxExposure: { huf: 100, eur: 0, usd: 0 },
+        riskRating: 1,
+        risks_hu: [`Inflációs kockázat (ha KSH > ${MARKET_STATE.fixmapRate}%)`, "Korai kilépés 1% büntetés", "Reinvesztálási kockázat futamidő végén"],
+        risks_en: [`Inflation risk (if KSH > ${MARKET_STATE.fixmapRate}%)`, "Early exit: 1% penalty", "Reinvestment risk at maturity"],
+        assumptions_hu: `Kamat (lejáratig zárolt): ${MARKET_STATE.fixmapRate}% évente | Adó: 0% | Korai kilépés: 1% büntetés | Kamat újrabefektetése: igen`,
+        assumptions_en: `Rate (locked to maturity): ${MARKET_STATE.fixmapRate}% annually | Tax: 0% | Early exit: 1% penalty | Coupon reinvested: yes`,
+      };
+    }
+
+    case "pmap": {
+      if (inputs.tax_residency !== "HU") return { eligible: false, reason_hu: "Nem magyar adóügyi illetőség", reason_en: "Non-HU tax residency" };
+      // Year 1: previous year inflation + premium
+      const year1Coupon = (MARKET_STATE.prevYearInflation + MARKET_STATE.pmpapPremium) / 100;
+      // Years 2+: MNB forecast inflation + premium
+      const forecastCoupon = (MARKET_STATE.mnbForecast2026 + MARKET_STATE.pmpapPremium) / 100;
+
+      let value = amountHuf * (1 + year1Coupon);
+      for (let i = 2; i <= h; i++) {
+        value *= (1 + forecastCoupon);
       }
+      // Low/high scenarios
+      const lowCoupon = (Math.max(MARKET_STATE.mnbForecast2026 - 1, 1) + MARKET_STATE.pmpapPremium) / 100;
+      const highCoupon = (MARKET_STATE.mnbForecast2026 + 2 + MARKET_STATE.pmpapPremium) / 100;
+      let lowVal = amountHuf * (1 + year1Coupon);
+      let highVal = amountHuf * (1 + year1Coupon);
+      for (let i = 2; i <= h; i++) { lowVal *= (1 + lowCoupon); highVal *= (1 + highCoupon); }
+
+      return {
+        eligible: true,
+        netValue: value,
+        lowNet: lowVal,
+        highNet: highVal,
+        taxRate: 0,
+        tax: 0,
+        netReturnPct: value / amountHuf - 1,
+        annualizedReturn: Math.pow(value / amountHuf, 1 / h) - 1,
+        liquidity: 4,
+        fxExposure: { huf: 100, eur: 0, usd: 0 },
+        riskRating: 2,
+        risks_hu: ["MNB inflációs előrejelzés alulbecslés esetén alacsonyabb hozam", "Korai kilépés 1% büntetés", "Deflációs forgatókönyv: nem garantált a növekedés"],
+        risks_en: ["If MNB inflation forecast undershoots, lower yield", "Early exit: 1% penalty", "Deflation scenario: growth not guaranteed"],
+        assumptions_hu: `1. év: előző évi KSH (${MARKET_STATE.prevYearInflation}%) + ${MARKET_STATE.pmpapPremium}% prémium = ${(year1Coupon*100).toFixed(2)}% | 2+ év: MNB előrejelzés + prémium`,
+        assumptions_en: `Year 1: previous KSH (${MARKET_STATE.prevYearInflation}%) + ${MARKET_STATE.pmpapPremium}% premium = ${(year1Coupon*100).toFixed(2)}% | Years 2+: MNB forecast + premium`,
+      };
     }
-  }
-  // place base (eagle) at BASE_X, BASE_Y (2x2)
-  world[BASE_Y][BASE_X] = T_BASE;
-  world[BASE_Y][BASE_X+1] = T_BASE;
-  world[BASE_Y+1][BASE_X] = T_BASE;
-  world[BASE_Y+1][BASE_X+1] = T_BASE;
-  // place brick fortification around base
-  fortifyBase(false);
-  // clear spawn pockets so player and enemies aren't entombed
-  clearSpawnArea(PLAYER_SPAWN.x, PLAYER_SPAWN.y);
-  clearSpawnArea(0, 0);
-  clearSpawnArea(12, 0);
-  clearSpawnArea(24, 0);
-}
 
-function clearSpawnArea(x, y) {
-  // wipe a 2x2 sub-cell area, but never erase the eagle itself
-  for (let dy = 0; dy < 2; dy++) {
-    for (let dx = 0; dx < 2; dx++) {
-      const xx = x+dx, yy = y+dy;
-      if (xx<0||yy<0||xx>=FIELD||yy>=FIELD) continue;
-      if (world[yy][xx] === T_BASE) continue;
-      world[yy][xx] = T_EMPTY;
+    case "map_plus": {
+      if (inputs.tax_residency !== "HU") return { eligible: false, reason_hu: "Nem magyar adóügyi illetőség", reason_en: "Non-HU tax residency" };
+      // Simplified stepped-rate model — assume average rate is ~6.8% across 5 years for current series
+      const avgRate = 0.068;
+      const value = amountHuf * Math.pow(1 + avgRate, h);
+
+      return {
+        eligible: true,
+        netValue: value,
+        lowNet: value,
+        highNet: value,
+        taxRate: 0,
+        tax: 0,
+        netReturnPct: value / amountHuf - 1,
+        annualizedReturn: avgRate,
+        liquidity: 4,
+        fxExposure: { huf: 100, eur: 0, usd: 0 },
+        riskRating: 2,
+        risks_hu: ["Sávos kamat: első év magas, későbbi évek alacsonyabb", "Korai kilépés 1% büntetés", "Inflációs kockázat ha későbbi évek lemaradnak"],
+        risks_en: ["Stepped rate: high year 1, lower later", "Early exit: 1% penalty", "Inflation risk if later years lag"],
+        assumptions_hu: `1. évi kamat: ${MARKET_STATE.mapPlusFirstYearRate}% | Átlag 5 évre: ~6,8% | Sávos: ÁKK prospektus szerint | Adó: 0%`,
+        assumptions_en: `Year 1 rate: ${MARKET_STATE.mapPlusFirstYearRate}% | 5y average: ~6.8% | Tiered: per ÁKK prospectus | Tax: 0%`,
+      };
     }
-  }
-}
 
-function fortifyBase(steel) {
-  const t = steel ? T_STEEL : T_BRICK;
-  // ring around base
-  const cells = [
-    [BASE_X-1, BASE_Y-1],[BASE_X, BASE_Y-1],[BASE_X+1, BASE_Y-1],[BASE_X+2, BASE_Y-1],
-    [BASE_X-1, BASE_Y],[BASE_X+2, BASE_Y],
-    [BASE_X-1, BASE_Y+1],[BASE_X+2, BASE_Y+1],
-  ];
-  for (const [x,y] of cells) {
-    if (x>=0 && x<FIELD && y>=0 && y<FIELD && world[y][x] !== T_BASE) {
-      world[y][x] = t;
+    case "bmap": {
+      if (inputs.tax_residency !== "HU") return { eligible: false, reason_hu: "Nem magyar adóügyi illetőség", reason_en: "Non-HU tax residency" };
+      const rate = MARKET_STATE.bmpapIndicativeRate / 100;
+      const value = amountHuf * Math.pow(1 + rate, h);
+      const lowVal = amountHuf * Math.pow(1.04, h);
+      const highVal = amountHuf * Math.pow(1.07, h);
+
+      return {
+        eligible: true,
+        netValue: value,
+        lowNet: lowVal,
+        highNet: highVal,
+        taxRate: 0,
+        tax: 0,
+        netReturnPct: value / amountHuf - 1,
+        annualizedReturn: rate,
+        liquidity: 4,
+        fxExposure: { huf: 100, eur: 0, usd: 0 },
+        riskRating: 2,
+        risks_hu: ["DKJ-követő — MNB kamatcsökkentés esetén hozam csökken", "Inflációs kockázat ha alapkamat csökken", "Korai kilépés 1% büntetés"],
+        risks_en: ["DKJ-linked — yield falls on MNB rate cuts", "Inflation risk if base rate falls", "Early exit: 1% penalty"],
+        assumptions_hu: `Indikatív kamat: ${MARKET_STATE.bmpapIndicativeRate}% (3m DKJ-követő) | Adó: 0% | Negyedévente reszetelődik`,
+        assumptions_en: `Indicative rate: ${MARKET_STATE.bmpapIndicativeRate}% (3m DKJ-linked) | Tax: 0% | Resets quarterly`,
+      };
     }
+
+    case "dkj": {
+      if (inputs.tax_residency !== "HU") return { eligible: false, reason_hu: "Nem magyar adóügyi illetőség", reason_en: "Non-HU tax residency" };
+      // Use 12m for horizon >=1, 6m for shorter
+      const yieldRate = h >= 1 ? MARKET_STATE.dkj12mRate / 100 : MARKET_STATE.dkj6mRate / 100;
+      const effectiveHorizon = Math.min(h, 1); // DKJ matures within 1y
+      const value = amountHuf * Math.pow(1 + yieldRate, effectiveHorizon);
+
+      return {
+        eligible: true,
+        netValue: value,
+        lowNet: value,
+        highNet: value,
+        taxRate: 0,
+        tax: 0,
+        netReturnPct: value / amountHuf - 1,
+        annualizedReturn: yieldRate,
+        liquidity: 4,
+        fxExposure: { huf: 100, eur: 0, usd: 0 },
+        riskRating: 1,
+        risks_hu: ["Rövid futamidő: reinvesztálási kockázat", "Másodlagos piac alacsony likviditás", "Az időtávod hosszabb a DKJ futamidejénél"],
+        risks_en: ["Short maturity: reinvestment risk", "Secondary market: low liquidity", "Your horizon may exceed DKJ maturity"],
+        assumptions_hu: `Hozam (12m DKJ): ${MARKET_STATE.dkj12mRate}% | Adó: 0% | Lejáratig tartás | Másodlagos piac: széles spread`,
+        assumptions_en: `Yield (12m DKJ): ${MARKET_STATE.dkj12mRate}% | Tax: 0% | Held to maturity | Secondary market: wide spreads`,
+      };
+    }
+
+    case "emap": {
+      if (inputs.tax_residency !== "HU") return { eligible: false, reason_hu: "Nem magyar adóügyi illetőség", reason_en: "Non-HU tax residency" };
+      if (inputs.fx_preference === "HUF_only") return { eligible: false, reason_hu: "A felhasználó csak HUF-ot preferál; az EMÁP EUR-denominált", reason_en: "User prefers HUF-only; EMÁP is EUR-denominated" };
+      const couponRate = (MARKET_STATE.emapEuriborRate + MARKET_STATE.emapPremium) / 100;
+      const eurAmount = inputs.currency === "EUR" ? inputs.amount : amountHuf / MARKET_STATE.fxHufEur;
+      const eurValue = eurAmount * Math.pow(1 + couponRate, h);
+      const hufValue = eurValue * MARKET_STATE.fxHufEur;
+      // FX sensitivity
+      const lowHuf = eurValue * MARKET_STATE.fxHufEur * 0.85;
+      const highHuf = eurValue * MARKET_STATE.fxHufEur * 1.15;
+
+      return {
+        eligible: true,
+        netValue: hufValue,
+        lowNet: lowHuf,
+        highNet: highHuf,
+        taxRate: 0,
+        tax: 0,
+        netReturnPct: hufValue / amountHuf - 1,
+        annualizedReturn: Math.pow(hufValue / amountHuf, 1 / h) - 1,
+        liquidity: 4,
+        fxExposure: { huf: 0, eur: 100, usd: 0 },
+        riskRating: 3,
+        risks_hu: ["EURIBOR-csökkenés esetén alacsonyabb hozam", "EUR/HUF árfolyamkockázat (±15%)", "Korai kilépés 1% büntetés"],
+        risks_en: ["If EURIBOR falls, lower yield", "EUR/HUF FX risk (±15%)", "Early exit: 1% penalty"],
+        assumptions_hu: `Kamat: 6M EURIBOR (${MARKET_STATE.emapEuriborRate}%) + ${MARKET_STATE.emapPremium}% prémium | Adó: 0% | FX: EUR/HUF konstansnak modellezve a központi esetben`,
+        assumptions_en: `Rate: 6M EURIBOR (${MARKET_STATE.emapEuriborRate}%) + ${MARKET_STATE.emapPremium}% premium | Tax: 0% | FX: EUR/HUF modeled constant in central case`,
+      };
+    }
+
+    case "babakotveny": {
+      if (!inputs.has_child_under_18) return { eligible: false, reason_hu: "Nincs jogosult gyermek", reason_en: "No eligible child" };
+      if (inputs.tax_residency !== "HU") return { eligible: false, reason_hu: "Nem magyar adóügyi illetőség", reason_en: "Non-HU tax residency" };
+      const yearlySubsidy = Math.min(amountHuf * 0.10, 12000);
+      const couponRate = (MARKET_STATE.prevYearInflation + MARKET_STATE.babakotvenyPremium) / 100;
+      const yearsToEighteen = Math.min(h, 18); // assume child young
+      const effectiveCapital = amountHuf + yearlySubsidy;
+      const value = effectiveCapital * Math.pow(1 + couponRate, yearsToEighteen);
+
+      return {
+        eligible: true,
+        netValue: value,
+        lowNet: value * 0.9,
+        highNet: value * 1.1,
+        taxRate: 0,
+        tax: 0,
+        netReturnPct: value / amountHuf - 1,
+        annualizedReturn: Math.pow(value / amountHuf, 1 / yearsToEighteen) - 1,
+        liquidity: 1,
+        fxExposure: { huf: 100, eur: 0, usd: 0 },
+        riskRating: 2,
+        risks_hu: ["18 éves korig lekötve", "Inflációs kitettség (de 3% prémium védi)", "Állami támogatás évi 12 000 Ft-ra korlátozott"],
+        risks_en: ["Locked until child age 18", "Inflation exposure (but 3% premium protects)", "State subsidy capped at 12,000 HUF/year"],
+        assumptions_hu: `Kamat: előző évi KSH (${MARKET_STATE.prevYearInflation}%) + 3% prémium = ${(couponRate*100).toFixed(2)}% | Állami támogatás: 10% (max 12 000 Ft/év) | Adó: 0%`,
+        assumptions_en: `Rate: previous year KSH (${MARKET_STATE.prevYearInflation}%) + 3% premium = ${(couponRate*100).toFixed(2)}% | State subsidy: 10% (max 12,000 HUF/year) | Tax: 0%`,
+      };
+    }
+
+    case "huf_cash": {
+      const rate = MARKET_STATE.bestHufDepositRate / 100;
+      const grossInterest = amountHuf * rate * h;
+      const tax = grossInterest * 0.28;
+      const netValue = amountHuf + grossInterest - tax;
+
+      return {
+        eligible: true,
+        netValue,
+        lowNet: netValue,
+        highNet: netValue,
+        taxRate: 0.28,
+        tax,
+        netReturnPct: netValue / amountHuf - 1,
+        annualizedReturn: Math.pow(netValue / amountHuf, 1 / h) - 1,
+        liquidity: 5,
+        fxExposure: { huf: 100, eur: 0, usd: 0 },
+        riskRating: 1,
+        risks_hu: ["Inflációs kockázat (jelenleg 1,8% < 5,5%, így pozitív reálkamat — de változhat)", "OBA-biztosítás 100k EUR fölött nem fedez", "Promóciós kamat új pénz feltétellel"],
+        risks_en: ["Inflation risk (currently 1.8% < 5.5%, so positive real rate — but may change)", "OBA insurance does not cover above 100k EUR", "Promotional rate often requires new-money condition"],
+        assumptions_hu: `Legjobb elérhető akciós HUF betéti kamat: ${MARKET_STATE.bestHufDepositRate}% | Adó: 28% (15% SZJA + 13% szocho) | Promóciós feltételek esetlegesek`,
+        assumptions_en: `Best available promotional HUF deposit rate: ${MARKET_STATE.bestHufDepositRate}% | Tax: 28% (15% SZJA + 13% szocho) | Promo conditions apply`,
+      };
+    }
+
+    case "fx_cash": {
+      if (inputs.fx_preference === "HUF_only") return { eligible: false, reason_hu: "A felhasználó csak HUF-ot preferál", reason_en: "User opted out of FX exposure" };
+      // Default to USD if user has USD, else EUR
+      const targetCurrency = inputs.currency === "USD" || inputs.fx_preference === "USD_ok" ? "USD" : "EUR";
+      const rate = targetCurrency === "USD" ? MARKET_STATE.bestUsdDepositRate / 100 : MARKET_STATE.bestEurDepositRate / 100;
+      const fxSpread = 0.005;
+      const fxRate = targetCurrency === "USD" ? MARKET_STATE.fxHufUsd : MARKET_STATE.fxHufEur;
+
+      let fxAmount;
+      if (inputs.currency === "HUF") {
+        fxAmount = (amountHuf / fxRate) * (1 - fxSpread);
+      } else if (inputs.currency === targetCurrency) {
+        fxAmount = inputs.amount;
+      } else {
+        fxAmount = (amountHuf / fxRate) * (1 - fxSpread);
+      }
+      const grossInterest = fxAmount * rate * h;
+      const tax = grossInterest * 0.28;
+      const netFxValue = fxAmount + grossInterest - tax;
+      const hufAtExit = (inputs.currency === "HUF" ? netFxValue * fxRate * (1 - fxSpread) : netFxValue * fxRate);
+      const lowHuf = hufAtExit * 0.85;
+      const highHuf = hufAtExit * 1.15;
+
+      return {
+        eligible: true,
+        netValue: hufAtExit,
+        lowNet: lowHuf,
+        highNet: highHuf,
+        taxRate: 0.28,
+        tax: tax * fxRate,
+        netReturnPct: hufAtExit / amountHuf - 1,
+        annualizedReturn: Math.pow(hufAtExit / amountHuf, 1 / h) - 1,
+        targetCurrency,
+        liquidity: 5,
+        fxExposure: targetCurrency === "USD" ? { huf: 0, eur: 0, usd: 100 } : { huf: 0, eur: 100, usd: 0 },
+        riskRating: 3,
+        risks_hu: [`${targetCurrency}/HUF árfolyamkockázat (±15% ${h}y horizonton)`, "28% adó a kamatra", "FX-spread belépéskor és kilépéskor"],
+        risks_en: [`${targetCurrency}/HUF FX risk (±15% over ${h}y horizon)`, "28% tax on interest", "FX spread at entry and exit"],
+        assumptions_hu: `Cél deviza: ${targetCurrency} | Kamat: ${(rate*100).toFixed(2)}% | FX-spread: 0,5% | Adó: 28% | FX konstansnak modellezve`,
+        assumptions_en: `Target currency: ${targetCurrency} | Rate: ${(rate*100).toFixed(2)}% | FX spread: 0.5% | Tax: 28% | FX modeled constant`,
+      };
+    }
+
+    case "wait": {
+      const currentAccountReturn = 0.005;
+      const monthlyReturn = currentAccountReturn / 12;
+      const netValue = amountHuf * (1 + monthlyReturn);
+      return {
+        eligible: true,
+        alwaysEvaluated: true,
+        netValue,
+        lowNet: netValue,
+        highNet: netValue,
+        taxRate: 0.28,
+        tax: 0,
+        netReturnPct: monthlyReturn,
+        annualizedReturn: currentAccountReturn,
+        liquidity: 5,
+        fxExposure: { huf: 100, eur: 0, usd: 0 },
+        riskRating: 1,
+        risks_hu: ["Inflációs erózió 30 nap alatt", "Elszalasztott alternatív hozam", "Új ÁKK sorozat / MNB kamatdöntés bekövetkezhet"],
+        risks_en: ["Inflation erosion over 30 days", "Foregone alternative return", "New ÁKK series / MNB decision may materialize"],
+        assumptions_hu: `Folyószámla / azonnali hozzáférésű megtakarítás: ~0,5% éves | 30 nap: ~0,04% | Adó: 28% a kamatra | Cél: új információ várása`,
+        assumptions_en: `Current account / instant savings: ~0.5% annual | 30 days: ~0.04% | Tax: 28% on interest | Purpose: wait for new information`,
+      };
+    }
+
+    case "p1_no_tbsz": {
+      const nominalReturn = 0.0628;
+      const grossValue = amountHuf * Math.pow(1 + nominalReturn, h);
+      const grossGain = grossValue - amountHuf;
+      const tax = grossGain * 0.28;
+      const netValue = grossValue - tax;
+
+      return {
+        eligible: true,
+        penalty: true,
+        netValue,
+        lowNet: netValue * 0.85,
+        highNet: netValue * 1.15,
+        taxRate: 0.28,
+        tax,
+        netReturnPct: netValue / amountHuf - 1,
+        annualizedReturn: Math.pow(netValue / amountHuf, 1 / h) - 1,
+        liquidity: 5,
+        fxExposure: { huf: 0, eur: 0, usd: 100 },
+        riskRating: 4,
+        risks_hu: ["Ugyanazok mint Modul 01 + nincs TBSZ adóelőny", "28% adó minden nyereségen", "Adóbevallási kötelezettség"],
+        risks_en: ["Same as Module 01 + no TBSZ tax benefit", "28% tax on all gains", "Manual tax filing required"],
+        assumptions_hu: `Ugyanaz a VWCE mint Modul 01, de TBSZ köpeny nélkül | Adó: teljes 28% | Cél: bemutatni a TBSZ előnyét`,
+        assumptions_en: `Same VWCE as Module 01, but no TBSZ wrapper | Tax: full 28% | Purpose: show the TBSZ advantage`,
+      };
+    }
+
+    case "p2_etoro": {
+      const effectiveReturn = 0.0628 - 0.005; // spread cost
+      const grossValue = amountHuf * Math.pow(1 + effectiveReturn, h);
+      const grossGain = grossValue - amountHuf;
+      const tax = grossGain * 0.28;
+      const netValue = grossValue - tax;
+
+      return {
+        eligible: true,
+        penalty: true,
+        netValue,
+        lowNet: netValue * 0.85,
+        highNet: netValue * 1.15,
+        taxRate: 0.28,
+        tax,
+        netReturnPct: netValue / amountHuf - 1,
+        annualizedReturn: Math.pow(netValue / amountHuf, 1 / h) - 1,
+        liquidity: 4,
+        fxExposure: { huf: 0, eur: 0, usd: 100 },
+        riskRating: 5,
+        risks_hu: ["Spread-költségek (~0,5%/év halmozottan)", "Adóelőny nélkül 28% adó", "Social trading: követett kereskedő stratégiája megváltozhat"],
+        risks_en: ["Spread costs (~0.5%/year compounded)", "No tax wrapper: 28% tax", "Social trading: copied trader strategy may shift"],
+        assumptions_hu: `Várható hozam mínusz 0,5% spread-költség | 28% adó | Withdrawal fee: 5 USD | Cél: bemutatni a halmozott költséget`,
+        assumptions_en: `Expected return minus 0.5% spread cost | 28% tax | Withdrawal fee: $5 | Purpose: show compounded cost`,
+      };
+    }
+
+    case "p3_standard_deposit": {
+      const rate = 0.02;
+      const grossInterest = amountHuf * rate * h;
+      const tax = grossInterest * 0.28;
+      const netValue = amountHuf + grossInterest - tax;
+
+      return {
+        eligible: true,
+        penalty: true,
+        netValue,
+        lowNet: netValue,
+        highNet: netValue,
+        taxRate: 0.28,
+        tax,
+        netReturnPct: netValue / amountHuf - 1,
+        annualizedReturn: Math.pow(netValue / amountHuf, 1 / h) - 1,
+        liquidity: 5,
+        fxExposure: { huf: 100, eur: 0, usd: 0 },
+        riskRating: 1,
+        risks_hu: ["Inflációs kockázat (negatív reálkamat tartomány)", "Elszalasztott opportunity-cost vs ÁKK", "Bankspecifikus kockázat (OBA-on felül)"],
+        risks_en: ["Inflation risk (negative real rate territory)", "Opportunity cost vs ÁKK", "Bank-specific risk (above OBA)"],
+        assumptions_hu: `Sztenderd (nem akciós) HUF betéti kamat: 2,0% | Adó: 28% | Cél: bemutatni az opportunity cost-ot a FixMÁP-hoz képest`,
+        assumptions_en: `Standard (non-promotional) HUF deposit rate: 2.0% | Tax: 28% | Purpose: show opportunity cost vs FixMÁP`,
+      };
+    }
+
+    default:
+      return { eligible: false, reason_hu: "Ismeretlen modul", reason_en: "Unknown module" };
   }
 }
 
-// ---------- entities ----------
-function makeTank(opts) {
-  return {
-    x: opts.x, y: opts.y,         // pixel position (sub-cell units * TILE)
-    dir: opts.dir ?? D_UP,
-    speed: opts.speed ?? 0.8,
-    type: opts.type ?? 'player',  // player, basic, fast, power, armor
-    armor: opts.armor ?? 0,       // hp for armor tanks
-    isFlashing: opts.isFlashing ?? false,
-    cooldown: 0,
-    bullets: 0,
-    maxBullets: opts.maxBullets ?? 1,
-    bulletSpeed: opts.bulletSpeed ?? 2.6,
-    bulletPower: opts.bulletPower ?? 1, // 1 normal, 2 cracks steel
-    star: opts.star ?? 0,         // player upgrade level
-    spawnAnim: 32,
-    moveAnim: 0,
-    aiTimer: Math.floor(Math.random()*60),
-    onIce: false,
-    iceVx: 0, iceVy: 0,
-    alive: true,
-  };
+// =========================================================================
+// COMPARISON VIEW GENERATORS
+// =========================================================================
+function sortByReturn(results) {
+  return [...results].filter(r => r.eligible && !r.penalty)
+    .sort((a, b) => b.netValue - a.netValue);
+}
+function sortByLiquidity(results) {
+  return [...results].filter(r => r.eligible && !r.penalty)
+    .sort((a, b) => b.liquidity - a.liquidity);
+}
+function sortByTax(results) {
+  return [...results].filter(r => r.eligible && !r.penalty)
+    .sort((a, b) => a.taxRate - b.taxRate);
+}
+function sortByRisk(results) {
+  return [...results].filter(r => r.eligible && !r.penalty)
+    .sort((a, b) => a.riskRating - b.riskRating);
 }
 
-function spawnPlayer() {
-  player = makeTank({
-    x: PLAYER_SPAWN.x * TILE,
-    y: PLAYER_SPAWN.y * TILE,
-    dir: D_UP,
-    speed: 1.1,
-    type: 'player',
-    maxBullets: 1,
-    bulletSpeed: 3,
-    bulletPower: 1,
+// Narrowing logic (Section 11 step 7)
+function generateNarrowing(results, lang, inputs) {
+  const eligible = results.filter(r => r.eligible && !r.penalty && r.id !== "wait");
+  const byReturn = [...eligible].sort((a, b) => b.netValue - a.netValue);
+  const top3 = byReturn.slice(0, 3);
+
+  return top3;
+}
+
+// Validation questions generator
+function generateValidationQuestions(narrowing, inputs, lang) {
+  const questions = [];
+  const topIds = narrowing.map(n => n.id);
+
+  if (topIds.includes("tbsz_vwce") || topIds.includes("p1_no_tbsz")) {
+    questions.push(lang === 'hu'
+      ? "Komfortos vagy USD-kitettséggel a teljes időtávon? Egy 30%-os USD-leértékelődés a HUF-fal szemben hogyan érintene?"
+      : "Are you comfortable with full USD exposure over the horizon? How would a 30% USD depreciation vs HUF affect you?");
+  }
+  if (topIds.includes("emap") || topIds.includes("tbsz_aggh")) {
+    questions.push(lang === 'hu'
+      ? "Komfortos vagy EUR-kitettséggel? Az EUR-os instrumentumok hozamát az EUR/HUF árfolyam határozza meg a kifizetéskor."
+      : "Are you comfortable with EUR exposure? EUR-denominated returns are determined by EUR/HUF rate at exit.");
+  }
+  if (topIds.includes("fixmap") || topIds.includes("map_plus") || topIds.includes("pmap")) {
+    questions.push(lang === 'hu'
+      ? "Hozzáférhetsz-e ehhez a pénzhez az időtávon belül, ha bármi történik? Az állampapírok 1% büntetéssel kiválthatók, de ez egy hozamveszteség."
+      : "Could you access this money during the horizon if something happens? Government bonds can be exited at 1% penalty, but that's a yield loss.");
+  }
+  if (inputs.horizon_years < 3 && topIds.includes("tbsz_vwce")) {
+    questions.push(lang === 'hu'
+      ? "Tényleg legalább 5 évig nem nyúlsz hozzá? A TBSZ legnagyobb előnye (0% adó) csak 5 év után aktiválódik."
+      : "Will you really not touch this for at least 5 years? TBSZ's biggest benefit (0% tax) only activates after 5 years.");
+  }
+  questions.push(lang === 'hu'
+    ? "Megrendülne-e az anyagi helyzeted egy 30%-os veszteség esetén az időtáv elején? (Részvénypiacok történelmileg ezt produkálják 1-szer egy évtizedben.)"
+    : "Would a 30% loss early in the horizon shake your financial position? (Equity markets historically do this once per decade.)");
+  questions.push(lang === 'hu'
+    ? "Az időtáv reális? Életesemények (lakásvásárlás, gyermek, álláskeresés) megváltoztathatják a likviditási igényt."
+    : "Is the horizon realistic? Life events (home purchase, child, job change) can change liquidity needs.");
+
+  return questions.slice(0, 5);
+}
+
+// =========================================================================
+// MAIN APP COMPONENT
+// =========================================================================
+function App() {
+  const [lang, setLang] = useState('hu');
+  const t = T[lang];
+
+  const [formData, setFormData] = useState({
+    amount: 1000,
+    currency: "USD",
+    horizon_years: 5,
+    risk_tolerance: "moderate",
+    tax_residency: "HU",
+    has_szja_payable: true,
+    has_child_under_18: false,
+    existing_tbsz_open: "none",
+    existing_nyesz_open: false,
+    fx_preference: "EUR_ok",
+    friction_preference: "medium",
   });
-  player.star = 0;
-  shieldTimer = 180; // 3 seconds spawn shield
-}
+  const [optionalOpen, setOptionalOpen] = useState(false);
+  const [results, setResults] = useState(null);
+  const [computing, setComputing] = useState(false);
+  const [error, setError] = useState(null);
+  const [activeTab, setActiveTab] = useState(null);
+  const [showJson, setShowJson] = useState(false);
+  const resultsRef = useRef(null);
 
-function pickEnemyType() {
-  // distribution: basic, fast, power, armor
-  const r = Math.random();
-  // bias armor + flashing toward later stages
-  const stageBias = stageIdx * 0.05;
-  if (r < 0.15 + stageBias) return 'armor';
-  if (r < 0.35 + stageBias) return 'power';
-  if (r < 0.6) return 'fast';
-  return 'basic';
-}
-
-function spawnEnemy() {
-  if (enemiesLeft <= 0) return;
-  // try spawn at next spawn point
-  const sp = spawnPoints[spawnIdx % spawnPoints.length];
-  spawnIdx++;
-  // check if spawn area free
-  if (overlapsTank(sp.x*TILE, sp.y*TILE)) return;
-
-  const type = pickEnemyType();
-  let opts = { x: sp.x*TILE, y: sp.y*TILE, dir: D_DOWN, type, isFlashing: Math.random() < 0.18 && enemiesLeft <= 18 };
-  if (type === 'basic') { opts.speed = 0.55; opts.bulletSpeed = 2.0; opts.maxBullets = 1; }
-  if (type === 'fast')  { opts.speed = 1.1;  opts.bulletSpeed = 2.0; opts.maxBullets = 1; }
-  if (type === 'power') { opts.speed = 0.7;  opts.bulletSpeed = 3.4; opts.maxBullets = 1; }
-  if (type === 'armor') { opts.speed = 0.7;  opts.bulletSpeed = 2.0; opts.maxBullets = 1; opts.armor = 4; }
-
-  enemies.push(makeTank(opts));
-  enemiesLeft--;
-  Audio.spawn();
-}
-
-function overlapsTank(px, py) {
-  const r = { x:px, y:py, w: TILE*2, h: TILE*2 };
-  if (player && player.alive && rectsOverlap(r, tankRect(player))) return true;
-  for (const e of enemies) if (rectsOverlap(r, tankRect(e))) return true;
-  return false;
-}
-
-function tankRect(t) { return { x:t.x, y:t.y, w: TILE*2, h: TILE*2 }; }
-
-function rectsOverlap(a, b) {
-  return a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
-}
-
-// ---------- terrain helpers ----------
-function tileAt(px, py) {
-  const tx = Math.floor(px / TILE), ty = Math.floor(py / TILE);
-  if (tx<0||ty<0||tx>=FIELD||ty>=FIELD) return T_STEEL; // wall
-  return world[ty][tx];
-}
-
-function isSolidForTank(t) {
-  return t === T_BRICK || t === T_STEEL || t === T_WATER || t === T_BASE;
-}
-function isSolidForBullet(t) {
-  return t === T_BRICK || t === T_STEEL || t === T_BASE;
-}
-
-function tankCanMoveTo(t, nx, ny) {
-  // tanks are 2x2 sub-cells (32x32 in logical / TILE=16 -> 2 cells)
-  // bounds
-  if (nx < 0 || ny < 0 || nx + TILE*2 > FIELD*TILE || ny + TILE*2 > FIELD*TILE) return false;
-  // check 4 corners + mid points
-  const pts = [
-    [nx, ny],
-    [nx + TILE*2 - 1, ny],
-    [nx, ny + TILE*2 - 1],
-    [nx + TILE*2 - 1, ny + TILE*2 - 1],
-    [nx + TILE, ny + TILE],
-  ];
-  for (const [x,y] of pts) {
-    const tt = tileAt(x,y);
-    if (isSolidForTank(tt)) return false;
-  }
-  // ice doesn't block, forest doesn't block, empty doesn't
-  // also check tank-tank collision
-  for (const o of enemies) if (o !== t && o.alive) {
-    if (rectsOverlap({x:nx,y:ny,w:TILE*2,h:TILE*2}, tankRect(o))) return false;
-  }
-  if (player && player !== t && player.alive) {
-    if (rectsOverlap({x:nx,y:ny,w:TILE*2,h:TILE*2}, tankRect(player))) return false;
-  }
-  return true;
-}
-
-function isOnIce(t) {
-  // any of the 4 corners on ice
-  const pts = [
-    [t.x+2, t.y+2],
-    [t.x+TILE*2-3, t.y+2],
-    [t.x+2, t.y+TILE*2-3],
-    [t.x+TILE*2-3, t.y+TILE*2-3],
-  ];
-  for (const [x,y] of pts) if (tileAt(x,y) === T_ICE) return true;
-  return false;
-}
-
-// snap to half-tile alignment when turning (classic feel)
-function alignToGrid(t) {
-  const gx = TILE; // half-block grid
-  if (t.dir === D_UP || t.dir === D_DOWN) {
-    t.x = Math.round(t.x / gx) * gx;
-  } else {
-    t.y = Math.round(t.y / gx) * gx;
-  }
-}
-
-// ---------- bullets ----------
-function fireBullet(tank) {
-  if (tank.cooldown > 0) return;
-  if (tank.bullets >= tank.maxBullets) return;
-  // bullet origin at tank center, offset in direction
-  const cx = tank.x + TILE - 2;
-  const cy = tank.y + TILE - 2;
-  const speed = tank.bulletSpeed;
-  const b = {
-    x: cx + DX[tank.dir]*TILE,
-    y: cy + DY[tank.dir]*TILE,
-    vx: DX[tank.dir]*speed,
-    vy: DY[tank.dir]*speed,
-    dir: tank.dir,
-    owner: tank,
-    power: tank.bulletPower,
-    alive: true,
-    w: 4, h: 4,
-  };
-  bullets.push(b);
-  tank.bullets++;
-  tank.cooldown = 8;
-  if (tank === player) Audio.fire();
-}
-
-function updateBullet(b) {
-  if (!b.alive) return;
-  b.x += b.vx; b.y += b.vy;
-  // out of bounds
-  if (b.x < 0 || b.y < 0 || b.x > FIELD*TILE || b.y > FIELD*TILE) {
-    b.alive = false; explodeSmall(b.x, b.y); Audio.hitWall();
-  }
-  // check terrain hit — sample bullet front
-  if (b.alive) {
-    const sx = b.x + b.w/2;
-    const sy = b.y + b.h/2;
-    const tx = Math.floor(sx / TILE);
-    const ty = Math.floor(sy / TILE);
-    if (tx<0||ty<0||tx>=FIELD||ty>=FIELD) {
-      b.alive=false;
-    } else {
-      const tt = world[ty][tx];
-      if (tt === T_BRICK) {
-        breakBricks(tx, ty, b.dir);
-        b.alive = false;
-        explodeSmall(b.x, b.y);
-        Audio.hitWall();
-      } else if (tt === T_STEEL) {
-        if (b.power >= 2) {
-          world[ty][tx] = T_EMPTY;
-          const ax = tx + (tx % 2 === 0 ? 1 : -1);
-          if (ax>=0 && ax<FIELD) world[ty][ax] = T_EMPTY;
-          const ay = ty + (ty % 2 === 0 ? 1 : -1);
-          if (ay>=0 && ay<FIELD) world[ay][tx] = T_EMPTY;
-        }
-        b.alive = false;
-        explodeSmall(b.x, b.y);
-        Audio.hitWall();
-      } else if (tt === T_BASE) {
-        destroyBase();
-        b.alive = false;
-        explodeBig(BASE_X*TILE, BASE_Y*TILE);
-      }
+  function handleSubmit() {
+    setError(null);
+    // Validation
+    if (!formData.amount || formData.amount <= 0) {
+      setError(lang === 'hu' ? "Az összeg pozitív szám kell legyen." : "Amount must be a positive number.");
+      return;
     }
-  }
-  // bullet vs bullet
-  if (b.alive) {
-    for (const o of bullets) {
-      if (o === b || !o.alive) continue;
-      if (rectsOverlap(b, o)) {
-        b.alive = false; o.alive = false;
-        o.owner.bullets = Math.max(0, o.owner.bullets-1);
-        break;
-      }
+    if (!formData.horizon_years || formData.horizon_years < 0.5) {
+      setError(lang === 'hu' ? "Az időtáv legalább 0,5 év." : "Horizon must be at least 0.5 years.");
+      return;
     }
-  }
-  // bullet vs tanks
-  if (b.alive) {
-    if (b.owner !== player && player && player.alive && shieldTimer<=0 && rectsOverlap(b, tankRect(player))) {
-      b.alive = false; explodeSmall(b.x,b.y);
-      playerHit();
-    } else {
-      for (const e of enemies) {
-        if (!e.alive) continue;
-        if (b.owner === e) continue;
-        if (b.owner !== player) continue;
-        if (rectsOverlap(b, tankRect(e))) {
-          b.alive = false; explodeSmall(b.x,b.y);
-          if (e.armor > 0) {
-            e.armor--;
-            e.hitFlash = 6;
-          } else {
-            killEnemy(e);
-          }
-          break;
-        }
-      }
+    if (formData.tax_residency !== "HU") {
+      setError(lang === 'hu' ? "Jelenleg csak magyar adóügyi illetőség támogatott." : "Currently only Hungarian tax residency is supported.");
+      return;
     }
-  }
-  // single, guaranteed cleanup point
-  if (!b.alive && b.owner) b.owner.bullets = Math.max(0, b.owner.bullets-1);
-}
 
-function breakBricks(tx, ty, dir) {
-  // bullet path is 8px wide; break the cell hit + perpendicular neighbors a bit
-  if (dir === D_UP || dir === D_DOWN) {
-    // break two horizontal cells at this row
-    world[ty][tx] = T_EMPTY;
-    const nx = tx + (tx % 2 === 0 ? 1 : -1);
-    if (nx>=0 && nx<FIELD && world[ty][nx] === T_BRICK) world[ty][nx] = T_EMPTY;
-  } else {
-    world[ty][tx] = T_EMPTY;
-    const ny = ty + (ty % 2 === 0 ? 1 : -1);
-    if (ny>=0 && ny<FIELD && world[ny][tx] === T_BRICK) world[ny][tx] = T_EMPTY;
-  }
-}
-
-// ---------- effects ----------
-function explodeSmall(x,y) {
-  explosions.push({ x:x-8, y:y-8, t:0, max:12, big:false });
-}
-function explodeBig(x,y) {
-  explosions.push({ x:x-12, y:y-12, t:0, max:30, big:true });
-  Audio.boom();
-}
-
-// ---------- enemy AI ----------
-function aiUpdate(e) {
-  if (freezeTimer > 0) return; // frozen
-  e.aiTimer--;
-  if (e.aiTimer <= 0) {
-    // pick a direction biased toward player or base
-    const r = Math.random();
-    if (r < 0.7) {
-      // random with bias to base
-      const bias = Math.random() < 0.5 ? 'base' : 'player';
-      let target = bias === 'base'
-        ? { x: (BASE_X+0.5)*TILE, y: (BASE_Y+0.5)*TILE }
-        : { x: player ? player.x : 0, y: player ? player.y : 0 };
-      const dx = target.x - e.x;
-      const dy = target.y - e.y;
-      let preferred;
-      if (Math.abs(dx) > Math.abs(dy)) preferred = dx > 0 ? D_RIGHT : D_LEFT;
-      else preferred = dy > 0 ? D_DOWN : D_UP;
-      // if blocked, random
-      const nx = e.x + DX[preferred]*1.5;
-      const ny = e.y + DY[preferred]*1.5;
-      if (tankCanMoveTo(e, nx, ny)) e.dir = preferred;
-      else e.dir = Math.floor(Math.random()*4);
-    } else {
-      e.dir = Math.floor(Math.random()*4);
-    }
-    alignToGrid(e);
-    e.aiTimer = 30 + Math.floor(Math.random()*60);
-  }
-  // shoot randomly
-  if (Math.random() < 0.02) fireBullet(e);
-  // try move
-  const nx = e.x + DX[e.dir]*e.speed;
-  const ny = e.y + DY[e.dir]*e.speed;
-  if (tankCanMoveTo(e, nx, ny)) {
-    e.x = nx; e.y = ny; e.moveAnim += e.speed;
-  } else {
-    e.aiTimer = 0; // pick again
-  }
-  if (e.cooldown > 0) e.cooldown--;
-  if (e.hitFlash) e.hitFlash--;
-}
-
-function killEnemy(e) {
-  e.alive = false;
-  explodeBig(e.x + TILE, e.y + TILE);
-  const pts = e.type === 'basic' ? 100 : e.type === 'fast' ? 200 : e.type === 'power' ? 300 : 400;
-  score += pts;
-  // drop powerup if flashing
-  if (e.isFlashing) spawnPowerup();
-  // index for stats
-  const idx = ['basic','fast','power','armor'].indexOf(e.type);
-  killsByType[idx]++;
-}
-
-// ---------- powerups ----------
-const PUP_TYPES = ['star','shield','timer','shovel','grenade','life','tank'];
-function spawnPowerup() {
-  // remove existing first (original keeps only one)
-  powerups = [];
-  // random empty position
-  let x,y, tries=0;
-  do {
-    x = Math.floor(Math.random() * (FIELD-2)) * TILE;
-    y = Math.floor(Math.random() * (FIELD-2)) * TILE;
-    tries++;
-  } while (tries < 30 && (tileAt(x+8,y+8) !== T_EMPTY && tileAt(x+8,y+8) !== T_FOREST));
-  const type = PUP_TYPES[Math.floor(Math.random() * PUP_TYPES.length)];
-  powerups.push({ x, y, type, blink: 0 });
-  Audio.pickup();
-}
-
-function applyPowerup(p) {
-  Audio.pickup();
-  score += 500;
-  if (p.type === 'star') {
-    if (player.star < 3) player.star++;
-    if (player.star === 1) { player.bulletSpeed = 4; }
-    if (player.star === 2) { player.maxBullets = 2; }
-    if (player.star === 3) { player.bulletPower = 2; }
-  } else if (p.type === 'shield') {
-    shieldTimer = 600;
-  } else if (p.type === 'timer') {
-    freezeTimer = 600;
-  } else if (p.type === 'shovel') {
-    fortifyBase(true);
-    baseFortifyTimer = 1200;
-  } else if (p.type === 'grenade') {
-    for (const e of enemies) if (e.alive) killEnemy(e);
-  } else if (p.type === 'life') {
-    lives++;
-  } else if (p.type === 'tank') {
-    // bonus shield + extra life-ish (we'll add small invuln + 1 life)
-    lives++;
-    shieldTimer = Math.max(shieldTimer, 300);
-  }
-}
-
-// ---------- player ----------
-function playerHit() {
-  if (shieldTimer > 0) return;
-  if (player.star > 0) { player.star--; updatePlayerPower(); shieldTimer = 60; return; }
-  // lose life
-  player.alive = false;
-  explodeBig(player.x + TILE, player.y + TILE);
-  Audio.death();
-  lives--;
-  if (lives < 0) {
-    state = 'gameover'; gameOverTimer = 0; Audio.gameover();
-  } else {
+    setComputing(true);
     setTimeout(() => {
-      spawnPlayer();
-      updatePlayerPower();
-    }, 400);
-  }
-}
+      const allModules = [...MODULES, ...PENALTY_MODULES];
+      const calcResults = allModules.map(m => {
+        const calc = calculateModule(m.id, formData);
+        return { ...m, ...calc };
+      });
+      const narrowing = generateNarrowing(calcResults, lang, formData);
+      const validationQuestions = generateValidationQuestions(narrowing, formData, lang);
 
-function updatePlayerPower() {
-  player.maxBullets = 1; player.bulletSpeed = 3; player.bulletPower = 1;
-  if (player.star >= 1) player.bulletSpeed = 4;
-  if (player.star >= 2) player.maxBullets = 2;
-  if (player.star >= 3) player.bulletPower = 2;
-}
-
-function destroyBase() {
-  if (!baseAlive) return;
-  baseAlive = false;
-  // scorch base tiles
-  for (let yy=0; yy<2; yy++) for (let xx=0; xx<2; xx++) {
-    world[BASE_Y+yy][BASE_X+xx] = T_EMPTY;
-  }
-  state = 'gameover'; gameOverTimer = 0; Audio.gameover();
-}
-
-// ---------- stage flow ----------
-function startStage(idx) {
-  stageIdx = idx;
-  buildWorld(STAGES[idx]);
-  bullets = []; enemies = []; powerups = []; explosions = []; particles = [];
-  freezeTimer = 0; baseFortifyTimer = 0;
-  enemiesLeft = 20;
-  enemiesActive = 4;
-  spawnTimer = 0;
-  spawnPoints = [{x:0,y:0},{x:12,y:0},{x:24,y:0}];
-  spawnIdx = 0;
-  baseAlive = true;
-  spawnPlayer();
-  killsByType = [0,0,0,0];
-  state = 'play';
-  Audio.stage();
-}
-
-function stageClear() {
-  state = 'stageclear';
-  stageClearTimer = 0;
-  // bonus: 100 per remaining life
-  score += lives * 100;
-  Audio.stage();
-}
-
-function nextStage() {
-  if (stageIdx + 1 >= STAGES.length) {
-    state = 'win'; gameOverTimer = 0;
-    return;
-  }
-  startStage(stageIdx + 1);
-}
-
-function handleEnter() {
-  if (state === 'menu') startGame();
-  else if (state === 'gameover' || state === 'win') startGame();
-  else if (state === 'stageclear') nextStage();
-}
-
-function togglePause() {
-  if (state === 'play') state = 'paused';
-  else if (state === 'paused') state = 'play';
-}
-
-function startGame() {
-  score = 0; lives = 3; stageIdx = 0;
-  startStage(0);
-}
-
-// ---------- update / draw ----------
-function update() {
-  if (state !== 'play') {
-    if (state === 'gameover') gameOverTimer++;
-    if (state === 'stageclear') {
-      stageClearTimer++;
-      if (stageClearTimer > 180) nextStage();
-    }
-    return;
+      setResults({
+        inputs: { ...formData },
+        marketState: MARKET_STATE,
+        modules: calcResults,
+        narrowing,
+        validationQuestions,
+        timestamp: new Date().toISOString(),
+      });
+      setActiveTab(null);
+      setComputing(false);
+      // Scroll to results
+      setTimeout(() => {
+        if (resultsRef.current) resultsRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 100);
+    }, 600);
   }
 
-  // timers
-  if (shieldTimer>0) shieldTimer--;
-  if (freezeTimer>0) freezeTimer--;
-  if (baseFortifyTimer>0) {
-    baseFortifyTimer--;
-    if (baseFortifyTimer === 0) fortifyBase(false);
+  return (
+    <>
+      {/* HEADER */}
+      <header className="site-header">
+        <div className="container header-inner">
+          <div className="brand">
+            <div className="brand-name">markin<span className="brand-dot">.</span>hu</div>
+            <div className="brand-tag">{t.brandTag}</div>
+          </div>
+          <div className="lang-toggle">
+            <button className={lang === 'hu' ? 'active' : ''} onClick={() => setLang('hu')}>HU</button>
+            <button className={lang === 'en' ? 'active' : ''} onClick={() => setLang('en')}>EN</button>
+          </div>
+        </div>
+      </header>
+
+      {/* HERO */}
+      <section className="hero">
+        <div className="container hero-grid">
+          <div>
+            <h1 className="hero-headline" dangerouslySetInnerHTML={{ __html: t.heroHeadline }} />
+            <p className="hero-lede">{t.heroLede}</p>
+          </div>
+          <div className="hero-meta">
+            <div className="hero-meta-label">{t.heroSnapshotLabel}</div>
+            <div className="hero-meta-value">
+              <strong>{t.heroDate}</strong><br />
+              {t.heroAlapkamat}: <span className="mono">{MARKET_STATE.mnbAlapkamat}%</span><br />
+              {t.heroInflation}: <span className="mono">{MARKET_STATE.kshInflationYoY}%</span> ({MARKET_STATE.kshInflationYoYAsOf})<br />
+              {t.heroFix}: <span className="mono">{MARKET_STATE.fixmapRate}%</span><br />
+              HUF/EUR: <span className="mono">{MARKET_STATE.fxHufEur}</span> · HUF/USD: <span className="mono">{MARKET_STATE.fxHufUsd}</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* FORM */}
+      <section className="form-section">
+        <div className="container">
+          <div className="section-label">{t.sectionInputs}</div>
+          <h2 className="section-title">{t.inputsTitle}</h2>
+          <p className="section-intro">{t.inputsIntro}</p>
+
+          <div className="form-card">
+            <div className="form-grid">
+              <div className="field">
+                <label className="field-label">{t.fieldAmount}</label>
+                <input
+                  type="number"
+                  className="mono"
+                  value={formData.amount}
+                  onChange={e => setFormData({ ...formData, amount: parseFloat(e.target.value) || 0 })}
+                  min="1"
+                />
+              </div>
+              <div className="field">
+                <label className="field-label">{t.fieldCurrency}</label>
+                <select
+                  className="mono"
+                  value={formData.currency}
+                  onChange={e => setFormData({ ...formData, currency: e.target.value })}
+                >
+                  <option value="HUF">HUF</option>
+                  <option value="EUR">EUR</option>
+                  <option value="USD">USD</option>
+                </select>
+              </div>
+              <div className="field">
+                <label className="field-label">{t.fieldHorizon}</label>
+                <input
+                  type="number"
+                  className="mono"
+                  value={formData.horizon_years}
+                  onChange={e => setFormData({ ...formData, horizon_years: parseFloat(e.target.value) || 0 })}
+                  step="0.5"
+                  min="0.5"
+                  max="40"
+                />
+              </div>
+              <div className="field">
+                <label className="field-label">{t.fieldRisk}</label>
+                <select
+                  value={formData.risk_tolerance}
+                  onChange={e => setFormData({ ...formData, risk_tolerance: e.target.value })}
+                >
+                  <option value="conservative">{t.riskConservative}</option>
+                  <option value="moderate">{t.riskModerate}</option>
+                  <option value="growth">{t.riskGrowth}</option>
+                </select>
+              </div>
+              <div className="field">
+                <label className="field-label">{t.fieldResidency}</label>
+                <select
+                  value={formData.tax_residency}
+                  onChange={e => setFormData({ ...formData, tax_residency: e.target.value })}
+                >
+                  <option value="HU">HU</option>
+                  <option value="non-HU">non-HU</option>
+                </select>
+              </div>
+              <div className="field field-checkbox-wrap">
+                <label className="field-label">{t.fieldSzja}</label>
+                <div className="field-checkbox">
+                  <input
+                    type="checkbox"
+                    id="szja"
+                    checked={formData.has_szja_payable}
+                    onChange={e => setFormData({ ...formData, has_szja_payable: e.target.checked })}
+                  />
+                  <label htmlFor="szja">{formData.has_szja_payable ? t.yes : t.no}</label>
+                </div>
+              </div>
+              <div className="field">
+                <label className="field-label">{t.fieldChild}</label>
+                <div className="field-checkbox">
+                  <input
+                    type="checkbox"
+                    id="child"
+                    checked={formData.has_child_under_18}
+                    onChange={e => setFormData({ ...formData, has_child_under_18: e.target.checked })}
+                  />
+                  <label htmlFor="child">{formData.has_child_under_18 ? t.yes : t.no}</label>
+                </div>
+              </div>
+            </div>
+
+            <div className="optional-toggle">
+              <button
+                className="toggle-button"
+                onClick={() => setOptionalOpen(!optionalOpen)}
+              >
+                <span className={`toggle-icon ${optionalOpen ? 'open' : ''}`}>▸</span>
+                {t.optionalToggle}
+              </button>
+
+              {optionalOpen && (
+                <div className="optional-content">
+                  <div className="form-grid">
+                    <div className="field">
+                      <label className="field-label">{t.fieldTbsz}</label>
+                      <select
+                        value={formData.existing_tbsz_open}
+                        onChange={e => setFormData({ ...formData, existing_tbsz_open: e.target.value })}
+                      >
+                        <option value="none">{t.none}</option>
+                        <option value="current_year">{lang === 'hu' ? 'Idei gyűjtőév' : 'Current year'}</option>
+                        <option value="prior_year">{lang === 'hu' ? 'Korábbi év' : 'Prior year'}</option>
+                      </select>
+                    </div>
+                    <div className="field">
+                      <label className="field-label">{t.fieldFxPref}</label>
+                      <select
+                        value={formData.fx_preference}
+                        onChange={e => setFormData({ ...formData, fx_preference: e.target.value })}
+                      >
+                        <option value="HUF_only">{t.huOnly}</option>
+                        <option value="EUR_ok">{t.eurOk}</option>
+                        <option value="USD_ok">{t.usdOk}</option>
+                        <option value="multi">{t.multi}</option>
+                      </select>
+                    </div>
+                    <div className="field">
+                      <label className="field-label">{t.fieldFriction}</label>
+                      <select
+                        value={formData.friction_preference}
+                        onChange={e => setFormData({ ...formData, friction_preference: e.target.value })}
+                      >
+                        <option value="low">{t.low}</option>
+                        <option value="medium">{t.medium}</option>
+                        <option value="high_ok">{t.highOk}</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {error && <div className="validation-error">{error}</div>}
+
+            <div className="submit-row">
+              <button
+                className="submit-button"
+                onClick={handleSubmit}
+                disabled={computing}
+              >
+                {computing ? '...' : t.submit}
+              </button>
+              <div className="submit-note">{t.submitNote}</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* RESULTS */}
+      {computing && (
+        <section className="results-section">
+          <div className="container">
+            <div className="computing">
+              {lang === 'hu' ? 'Számolás folyik...' : 'Computing...'}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {results && !computing && (
+        <section className="results-section" ref={resultsRef}>
+          <div className="container">
+            <div className="section-label">{t.sectionResults}</div>
+
+            {/* 7.1 Inputs restated */}
+            <div className="results-block">
+              <div className="block-header">
+                <h2 className="block-title">{t.inputsRestated}</h2>
+                <div className="block-num">7.1</div>
+              </div>
+              <div className="restated-grid">
+                <div className="restated-item">
+                  <div className="restated-label">{t.fieldAmount}</div>
+                  <div className="restated-value">{fmtNum(results.inputs.amount, lang)} {results.inputs.currency}</div>
+                </div>
+                <div className="restated-item">
+                  <div className="restated-label">{lang === 'hu' ? 'HUF-ban' : 'In HUF'}</div>
+                  <div className="restated-value">{fmtHuf(convertToHuf(results.inputs.amount, results.inputs.currency), lang)}</div>
+                </div>
+                <div className="restated-item">
+                  <div className="restated-label">{t.fieldHorizon}</div>
+                  <div className="restated-value">{fmtNum(results.inputs.horizon_years, lang, 1)} {t.years}</div>
+                </div>
+                <div className="restated-item">
+                  <div className="restated-label">{t.fieldRisk}</div>
+                  <div className="restated-value">{t['risk' + results.inputs.risk_tolerance.charAt(0).toUpperCase() + results.inputs.risk_tolerance.slice(1)]}</div>
+                </div>
+                <div className="restated-item">
+                  <div className="restated-label">{t.fieldResidency}</div>
+                  <div className="restated-value">{results.inputs.tax_residency}</div>
+                </div>
+                <div className="restated-item">
+                  <div className="restated-label">{t.fieldSzja}</div>
+                  <div className="restated-value">{results.inputs.has_szja_payable ? t.yes : t.no}</div>
+                </div>
+                <div className="restated-item">
+                  <div className="restated-label">{t.fieldChild}</div>
+                  <div className="restated-value">{results.inputs.has_child_under_18 ? t.yes : t.no}</div>
+                </div>
+                <div className="restated-item">
+                  <div className="restated-label">{t.fieldFxPref}</div>
+                  <div className="restated-value">{t[results.inputs.fx_preference === 'HUF_only' ? 'huOnly' : results.inputs.fx_preference === 'EUR_ok' ? 'eurOk' : results.inputs.fx_preference === 'USD_ok' ? 'usdOk' : 'multi']}</div>
+                </div>
+              </div>
+            </div>
+
+            {/* 7.2 Market snapshot */}
+            <div className="results-block">
+              <div className="block-header">
+                <h2 className="block-title">{t.marketSnapshot}</h2>
+                <div className="block-num">7.2 · {MARKET_STATE.asOfDate}</div>
+              </div>
+              <table className="market-table">
+                <tbody>
+                  <tr><td>MNB {lang === 'hu' ? 'alapkamat' : 'base rate'}</td><td>{MARKET_STATE.mnbAlapkamat}%</td></tr>
+                  <tr><td>KSH {lang === 'hu' ? 'infláció (YoY)' : 'inflation (YoY)'} <span className="source">{MARKET_STATE.kshInflationYoYAsOf}</span></td><td>{MARKET_STATE.kshInflationYoY}%</td></tr>
+                  <tr><td>MNB {lang === 'hu' ? 'inflációs előrejelzés' : 'inflation forecast'} 2026 / 2027</td><td>{MARKET_STATE.mnbForecast2026}% / {MARKET_STATE.mnbForecast2027}%</td></tr>
+                  <tr><td>HUF/EUR · HUF/USD</td><td>{MARKET_STATE.fxHufEur} · {MARKET_STATE.fxHufUsd}</td></tr>
+                  <tr><td>FixMÁP {lang === 'hu' ? 'aktuális' : 'current'} (5y)</td><td>{MARKET_STATE.fixmapRate}%</td></tr>
+                  <tr><td>MÁP+ {lang === 'hu' ? '1. évi kamat' : 'year 1 rate'}</td><td>{MARKET_STATE.mapPlusFirstYearRate}%</td></tr>
+                  <tr><td>BMÁP {lang === 'hu' ? 'indikatív' : 'indicative'}</td><td>{MARKET_STATE.bmpapIndicativeRate}%</td></tr>
+                  <tr><td>DKJ 12m</td><td>{MARKET_STATE.dkj12mRate}%</td></tr>
+                  <tr><td>{lang === 'hu' ? 'Legjobb HUF betét (akciós)' : 'Best HUF deposit (promo)'}</td><td>{MARKET_STATE.bestHufDepositRate}%</td></tr>
+                </tbody>
+              </table>
+            </div>
+
+            {/* 7.3 Modules by module */}
+            <div className="results-block">
+              <div className="block-header">
+                <h2 className="block-title">{t.modulesByModule}</h2>
+                <div className="block-num">7.3</div>
+              </div>
+              <div className="modules-grid">
+                {results.modules.filter(m => !m.penalty).map(m => (
+                  <ModuleCard key={m.id} mod={m} lang={lang} t={t} inputs={results.inputs} />
+                ))}
+              </div>
+            </div>
+
+            {/* 7.4 Penalty modules */}
+            <div className="results-block">
+              <div className="block-header">
+                <h2 className="block-title">{t.penalties}</h2>
+                <div className="block-num">7.4</div>
+              </div>
+              <p className="section-intro">{t.penaltiesIntro}</p>
+              <div className="modules-grid">
+                {results.modules.filter(m => m.penalty).map(m => (
+                  <ModuleCard key={m.id} mod={m} lang={lang} t={t} inputs={results.inputs} />
+                ))}
+              </div>
+            </div>
+
+            {/* 7.5 Four views */}
+            <div className="results-block">
+              <div className="block-header">
+                <h2 className="block-title">{t.fourViews}</h2>
+                <div className="block-num">7.5</div>
+              </div>
+              <p className="section-intro">{t.fourViewsIntro}</p>
+              <div className="tabs-bar">
+                <button className={`tab-button ${activeTab === 'return' ? 'active' : ''}`} onClick={() => setActiveTab('return')}>{t.viewByReturn}</button>
+                <button className={`tab-button ${activeTab === 'liquidity' ? 'active' : ''}`} onClick={() => setActiveTab('liquidity')}>{t.viewByLiquidity}</button>
+                <button className={`tab-button ${activeTab === 'tax' ? 'active' : ''}`} onClick={() => setActiveTab('tax')}>{t.viewByTax}</button>
+                <button className={`tab-button ${activeTab === 'risk' ? 'active' : ''}`} onClick={() => setActiveTab('risk')}>{t.viewByRisk}</button>
+              </div>
+              {!activeTab && <div className="tab-instruction">{t.pickLensInstruction}</div>}
+              {activeTab === 'return' && <ComparisonTable rows={sortByReturn(results.modules)} type="return" lang={lang} t={t} />}
+              {activeTab === 'liquidity' && <ComparisonTable rows={sortByLiquidity(results.modules)} type="liquidity" lang={lang} t={t} />}
+              {activeTab === 'tax' && <ComparisonTable rows={sortByTax(results.modules)} type="tax" lang={lang} t={t} />}
+              {activeTab === 'risk' && <ComparisonTable rows={sortByRisk(results.modules)} type="risk" lang={lang} t={t} />}
+            </div>
+
+            {/* 7.6 Narrowing */}
+            <div className="results-block">
+              <div className="block-header">
+                <h2 className="block-title">{t.narrowing}</h2>
+                <div className="block-num">7.6</div>
+              </div>
+              <div className="narrowing-card">
+                <div className="section-label">{lang === 'hu' ? 'Megfigyelés (nem ajánlás)' : 'Observation (not recommendation)'}</div>
+                <p className="narrowing-text">
+                  {lang === 'hu'
+                    ? `A számítás alapján a top 3 opció, amelyhez a matek vezet, az alábbi. A választás közöttük az, hogy hozam, biztonság, vagy likviditás dominál-e a döntésedben.`
+                    : `The math surfaces these top 3 options. The choice between them is whether return, safety, or liquidity dominates your decision.`}
+                </p>
+                <div className="narrowing-options">
+                  {results.narrowing.map((n, i) => (
+                    <div key={n.id} className="narrowing-option">
+                      <div className="narrowing-option-label">#{i + 1} {lang === 'hu' ? 'nettó hozam szerint' : 'by net return'}</div>
+                      <div className="narrowing-option-name">{n['name_' + lang]}</div>
+                      <div className="narrowing-option-detail">{fmtHuf(n.netValue, lang)} · {fmtPct(n.annualizedReturn, lang)} {lang === 'hu' ? 'éves' : 'annualized'}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* 7.7 Execution */}
+            <div className="results-block">
+              <div className="block-header">
+                <h2 className="block-title">{t.execution}</h2>
+                <div className="block-num">7.7</div>
+              </div>
+              <p className="section-intro">{t.executionIntro}</p>
+              <ExecutionLayer narrowing={results.narrowing} inputs={results.inputs} lang={lang} />
+            </div>
+
+            {/* 7.8 Validation questions */}
+            <div className="results-block">
+              <div className="block-header">
+                <h2 className="block-title">{t.validationQuestions}</h2>
+                <div className="block-num">7.8</div>
+              </div>
+              <p className="section-intro">{t.validationIntro}</p>
+              <div className="questions-list">
+                <ol>
+                  {results.validationQuestions.map((q, i) => <li key={i}>{q}</li>)}
+                </ol>
+              </div>
+            </div>
+
+            {/* 7.9 JSON capture */}
+            <div className="results-block">
+              <div className="block-header">
+                <h2 className="block-title">{t.jsonCapture}</h2>
+                <div className="block-num">7.9</div>
+              </div>
+              <p className="section-intro">{t.jsonNote}</p>
+              <button className="json-toggle" onClick={() => setShowJson(!showJson)}>
+                {showJson ? t.hideJson : t.showJson}
+              </button>
+              {showJson && (
+                <pre className="json-block" style={{ marginTop: '12px' }}>
+                  {JSON.stringify({
+                    inputs: results.inputs,
+                    marketState: results.marketState,
+                    modules: results.modules.map(m => ({
+                      id: m.id,
+                      eligible: m.eligible,
+                      netValue: m.netValue,
+                      taxRate: m.taxRate,
+                      tax: m.tax,
+                      annualizedReturn: m.annualizedReturn,
+                      liquidity: m.liquidity,
+                      riskRating: m.riskRating,
+                      fxExposure: m.fxExposure,
+                      reason: m.eligible ? null : m['reason_' + lang],
+                    })),
+                    narrowing: results.narrowing.map(n => n.id),
+                    timestamp: results.timestamp,
+                  }, null, 2)}
+                </pre>
+              )}
+            </div>
+
+          </div>
+        </section>
+      )}
+
+      {/* Disclaimer */}
+      <div className="disclaimer-bar">
+        <div className="container">
+          <strong>{t.disclaimerStrong}</strong> {t.disclaimer}
+        </div>
+      </div>
+
+      <footer className="site-footer">
+        <div className="container">
+          <div className="footer-brand">markin.hu</div>
+          <div>{t.footer}</div>
+        </div>
+      </footer>
+    </>
+  );
+}
+
+// =========================================================================
+// SUB-COMPONENTS
+// =========================================================================
+function ModuleCard({ mod, lang, t, inputs }) {
+  const name = mod['name_' + lang];
+  const sub = mod['sub_' + lang];
+
+  if (!mod.eligible) {
+    return (
+      <div className="module-card ineligible">
+        <div className="module-header">
+          <div>
+            <div className="module-num">{mod.num}</div>
+            <div className="module-name">{name}</div>
+          </div>
+        </div>
+        <div className="module-subtitle">{sub}</div>
+        <span className="module-status status-ineligible">{t.eligibilityNo}</span>
+        <div style={{ fontSize: 13, color: 'var(--muted)', marginTop: 4 }}>
+          {mod['reason_' + lang]}
+        </div>
+      </div>
+    );
   }
 
-  // player input
-  if (player && player.alive) {
-    let moved = false;
-    let wantDir = -1;
-    if (keys['ArrowUp']) wantDir = D_UP;
-    else if (keys['ArrowDown']) wantDir = D_DOWN;
-    else if (keys['ArrowLeft']) wantDir = D_LEFT;
-    else if (keys['ArrowRight']) wantDir = D_RIGHT;
+  const isWait = mod.id === "wait";
+  const isPenalty = mod.penalty;
 
-    const wasOnIce = player.onIce;
-    player.onIce = isOnIce(player);
+  return (
+    <div className={`module-card ${isWait ? 'wait' : ''} ${isPenalty ? 'penalty' : ''}`}>
+      <div className="module-header">
+        <div>
+          <div className="module-num">{mod.num}</div>
+          <div className="module-name">{name}</div>
+        </div>
+      </div>
+      <div className="module-subtitle">{sub}</div>
+      <span className={`module-status ${mod.warning ? 'status-warning' : isPenalty ? 'status-penalty' : 'status-eligible'}`}>
+        {mod.warning ? t.eligibilityWarning : isPenalty ? t.eligibilityRef : t.eligibilityYes}
+      </span>
+      {mod.warning && mod['warning_' + lang] && (
+        <div style={{ fontSize: 12, color: '#8a6b1e', marginBottom: 8, fontStyle: 'italic' }}>
+          ⚠ {mod['warning_' + lang]}
+        </div>
+      )}
 
-    if (wantDir !== -1) {
-      if (player.dir !== wantDir) {
-        player.dir = wantDir;
-        alignToGrid(player);
-      }
-      const nx = player.x + DX[wantDir]*player.speed;
-      const ny = player.y + DY[wantDir]*player.speed;
-      if (tankCanMoveTo(player, nx, ny)) {
-        player.x = nx; player.y = ny;
-        player.moveAnim += player.speed;
-        moved = true;
-        if (player.onIce) {
-          player.iceVx = DX[wantDir]*player.speed;
-          player.iceVy = DY[wantDir]*player.speed;
+      <div className="module-row">
+        <span className="module-row-label">{t.netValue}</span>
+        <span className="module-row-value positive">{fmtHuf(mod.netValue, lang)}</span>
+      </div>
+      {mod.lowNet !== mod.highNet && (
+        <div className="module-row">
+          <span className="module-row-label">{lang === 'hu' ? 'Tartomány (alacsony / magas)' : 'Range (low / high)'}</span>
+          <span className="module-row-value">{fmtHuf(mod.lowNet, lang)} / {fmtHuf(mod.highNet, lang)}</span>
+        </div>
+      )}
+      <div className="module-row">
+        <span className="module-row-label">{lang === 'hu' ? 'Éves nettó hozam' : 'Annualized net return'}</span>
+        <span className="module-row-value">{fmtPct(mod.annualizedReturn, lang)}</span>
+      </div>
+      <div className="module-row">
+        <span className="module-row-label">{t.taxOwed}</span>
+        <span className="module-row-value">{fmtHuf(mod.tax, lang)} ({fmtPct(mod.taxRate, lang, 0)})</span>
+      </div>
+      <div className="module-row">
+        <span className="module-row-label">{t.liquidity}</span>
+        <span className="module-row-value">{t['liq' + mod.liquidity]}</span>
+      </div>
+      <div className="module-row">
+        <span className="module-row-label">{t.riskRating}</span>
+        <span className="module-row-value">{t['risk' + mod.riskRating]}</span>
+      </div>
+
+      <div className="module-row" style={{ alignItems: 'flex-start' }}>
+        <span className="module-row-label">{t.fxExposure}</span>
+        <div style={{ flex: 1, marginLeft: 'auto', maxWidth: 160 }}>
+          <div className="fx-bar">
+            {mod.fxExposure.huf > 0 && <div className="fx-segment-huf" style={{ width: `${mod.fxExposure.huf}%` }} />}
+            {mod.fxExposure.eur > 0 && <div className="fx-segment-eur" style={{ width: `${mod.fxExposure.eur}%` }} />}
+            {mod.fxExposure.usd > 0 && <div className="fx-segment-usd" style={{ width: `${mod.fxExposure.usd}%` }} />}
+          </div>
+          <div className="fx-legend">
+            {mod.fxExposure.huf > 0 && <span className="fx-legend-item"><span className="fx-swatch fx-segment-huf"></span>HUF {mod.fxExposure.huf}%</span>}
+            {mod.fxExposure.eur > 0 && <span className="fx-legend-item"><span className="fx-swatch fx-segment-eur"></span>EUR {mod.fxExposure.eur}%</span>}
+            {mod.fxExposure.usd > 0 && <span className="fx-legend-item"><span className="fx-swatch fx-segment-usd"></span>USD {mod.fxExposure.usd}%</span>}
+          </div>
+        </div>
+      </div>
+
+      {mod['risks_' + lang] && (
+        <div className="module-risks">
+          <div className="module-risks-label">{t.topRisks}</div>
+          <ul>
+            {mod['risks_' + lang].map((r, i) => <li key={i}>{r}</li>)}
+          </ul>
+        </div>
+      )}
+
+      {mod['assumptions_' + lang] && (
+        <div className="module-assumptions">
+          <strong>{t.assumptions}:</strong> {mod['assumptions_' + lang]}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ComparisonTable({ rows, type, lang, t }) {
+  if (rows.length === 0) {
+    return <div style={{ padding: 24, fontStyle: 'italic', color: 'var(--muted)' }}>
+      {lang === 'hu' ? 'Nincs választható opció ehhez a nézethez.' : 'No eligible options for this view.'}
+    </div>;
+  }
+
+  if (type === "return") {
+    return (
+      <table className="comparison-table">
+        <thead><tr>
+          <th className="rank-cell">#</th>
+          <th>{t.tableHeaderModule}</th>
+          <th className="num">{t.tableHeaderValue}</th>
+          <th className="num">{t.tableHeaderReturn}</th>
+          <th className="num">{t.tableHeaderRange}</th>
+        </tr></thead>
+        <tbody>
+          {rows.map((r, i) => (
+            <tr key={r.id}>
+              <td className="rank-cell">{String(i + 1).padStart(2, '0')}</td>
+              <td>{r['name_' + lang]}</td>
+              <td className="num">{fmtHuf(r.netValue, lang)}</td>
+              <td className="num">{fmtPct(r.annualizedReturn, lang)}</td>
+              <td className="num">{fmtHuf(r.lowNet, lang)} – {fmtHuf(r.highNet, lang)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    );
+  }
+  if (type === "liquidity") {
+    const liqLabels = { 5: lang === 'hu' ? 'Azonnali' : 'Instant', 4: lang === 'hu' ? 'T+1, ≤1%' : 'T+1, ≤1%', 3: lang === 'hu' ? 'T+2, adóköteles' : 'T+2, taxable', 2: lang === 'hu' ? 'Adós kilépés' : 'Tax exit', 1: lang === 'hu' ? 'Lekötött' : 'Locked' };
+    return (
+      <table className="comparison-table">
+        <thead><tr>
+          <th className="rank-cell">#</th>
+          <th>{t.tableHeaderModule}</th>
+          <th className="num">{t.tableHeaderRating}</th>
+          <th>{t.tableHeaderExit}</th>
+        </tr></thead>
+        <tbody>
+          {rows.map((r, i) => (
+            <tr key={r.id}>
+              <td className="rank-cell">{String(i + 1).padStart(2, '0')}</td>
+              <td>{r['name_' + lang]}</td>
+              <td className="num">{r.liquidity}/5</td>
+              <td>{liqLabels[r.liquidity]}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    );
+  }
+  if (type === "tax") {
+    return (
+      <table className="comparison-table">
+        <thead><tr>
+          <th className="rank-cell">#</th>
+          <th>{t.tableHeaderModule}</th>
+          <th className="num">{t.tableHeaderTaxRate}</th>
+          <th className="num">{t.tableHeaderTaxOwed}</th>
+        </tr></thead>
+        <tbody>
+          {rows.map((r, i) => (
+            <tr key={r.id}>
+              <td className="rank-cell">{String(i + 1).padStart(2, '0')}</td>
+              <td>{r['name_' + lang]}</td>
+              <td className="num">{fmtPct(r.taxRate, lang, 0)}</td>
+              <td className="num">{fmtHuf(r.tax, lang)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    );
+  }
+  if (type === "risk") {
+    return (
+      <table className="comparison-table">
+        <thead><tr>
+          <th className="rank-cell">#</th>
+          <th>{t.tableHeaderModule}</th>
+          <th className="num">{t.tableHeaderRating}</th>
+          <th>{lang === 'hu' ? 'Jellemzés' : 'Description'}</th>
+        </tr></thead>
+        <tbody>
+          {rows.map((r, i) => (
+            <tr key={r.id}>
+              <td className="rank-cell">{String(i + 1).padStart(2, '0')}</td>
+              <td>{r['name_' + lang]}</td>
+              <td className="num">{r.riskRating}/5</td>
+              <td>{t['risk' + r.riskRating]}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    );
+  }
+  return null;
+}
+
+function ExecutionLayer({ narrowing, inputs, lang }) {
+  // Per Section 14, surface 2-3 providers for each of the top modules
+  return (
+    <div className="execution-grid">
+      {narrowing.map(n => {
+        let providers = [];
+        if (n.id === "tbsz_vwce" || n.id === "tbsz_aggh") {
+          if (inputs.existing_tbsz_open !== "none") {
+            providers = [
+              { name: lang === 'hu' ? 'Meglévő TBSZ folytatása' : 'Continue existing TBSZ', tag: 'existing', use: lang === 'hu' ? 'Nincs új számlanyitás. A gyűjtőév-számláló folytatódik.' : 'No new account opening. Gyűjtőév clock continues.' },
+              { name: 'Lightyear', tag: 'low-friction', use: lang === 'hu' ? 'Alacsony belépési küszöb VWCE-re. 0% kereskedési díj, 0,35% FX.' : 'Low-friction VWCE entry. 0% trade fee, 0.35% FX.' },
+            ];
+          } else if (inputs.friction_preference === "low") {
+            providers = [
+              { name: 'Lightyear', tag: 'primary', use: lang === 'hu' ? 'App-alapú, ingyenes TBSZ, 0% díj VWCE-re. Minimum 25 000 Ft.' : 'App-based, free TBSZ, 0% fee on VWCE. Min 25,000 HUF.' },
+              { name: 'Erste Invest', tag: 'alternative', use: lang === 'hu' ? 'Banki integráció, automatikus NAV-bevallás. Magasabb díj.' : 'Bank integration, auto NAV declaration. Higher fees.' },
+            ];
+          } else if (inputs.friction_preference === "high_ok") {
+            providers = [
+              { name: 'Interactive Brokers', tag: 'primary', use: lang === 'hu' ? 'Legolcsóbb díjak, legszélesebb termékkör. Magasabb KYC.' : 'Cheapest fees overall, broadest universe. Heavier KYC.' },
+              { name: 'Lightyear', tag: 'alternative', use: lang === 'hu' ? 'Egyszerűbb belépés, ha IBKR onboarding elakad.' : 'Simpler entry if IBKR onboarding stalls.' },
+            ];
+          } else {
+            providers = [
+              { name: 'Erste Invest', tag: 'primary', use: lang === 'hu' ? 'Banki integráció, automatikus NAV-bevallás.' : 'Bank integration, auto NAV declaration.' },
+              { name: 'Lightyear', tag: 'alternative', use: lang === 'hu' ? 'Alacsonyabb díjak, app-alapú.' : 'Lower fees, app-based.' },
+              { name: 'Interactive Brokers', tag: 'alternative', use: lang === 'hu' ? 'Legolcsóbb skálán, komplexebb belépés.' : 'Cheapest at scale, more complex onboarding.' },
+            ];
+          }
+        } else if (["fixmap", "pmap", "map_plus", "bmap", "dkj", "emap"].includes(n.id)) {
+          providers = [
+            { name: 'WebKincstár', tag: 'primary', use: lang === 'hu' ? 'Államkincstár-direkt, online, díjmentes.' : 'Government-direct, online, fee-free.' },
+            { name: lang === 'hu' ? 'Bank (Erste/K&H/OTP)' : 'Bank (Erste/K&H/OTP)', tag: 'alternative', use: lang === 'hu' ? 'Kényelmes, ha már van banki kapcsolat. ~0,5% díj.' : 'Convenient if user already banks here. ~0.5% fee.' },
+            { name: 'Magyar Posta', tag: 'alternative', use: lang === 'hu' ? 'Személyes ügyintézés.' : 'In-person option.' },
+          ];
+        } else if (n.id === "babakotveny") {
+          providers = [
+            { name: 'WebKincstár / Államkincstár', tag: 'primary', use: lang === 'hu' ? 'Babakötvény-számla a Kincstárnál (Start-számla).' : 'Babakötvény account at Kincstár (Start-account).' },
+          ];
+        } else if (n.id === "huf_cash") {
+          providers = [
+            { name: lang === 'hu' ? 'Bankmonitor-szűrés' : 'Bankmonitor filter', tag: 'primary', use: lang === 'hu' ? 'Aktuális legjobb HUF betéti kamatok. Akciós feltételek figyelendők.' : 'Current best HUF deposit rates. Watch promo conditions.' },
+          ];
+        } else if (n.id === "fx_cash") {
+          providers = [
+            { name: 'Wise', tag: 'primary', use: lang === 'hu' ? 'Legjobb multi-devizás UX, szűk FX-spread.' : 'Best multi-currency UX, tight FX spread.' },
+            { name: 'Lightyear (általános számla)', tag: 'alternative', use: lang === 'hu' ? 'Jelenleg legmagasabb USD-kamat.' : 'Highest USD rate currently observed.' },
+            { name: 'IBKR uninvested cash', tag: 'alternative', use: lang === 'hu' ? 'Interbank FX, nagyobb tételeknél előnyös.' : 'Interbank FX, advantageous at scale.' },
+          ];
+        } else if (n.id === "nyesz") {
+          providers = [
+            { name: 'Erste / K&H / OTP', tag: 'primary', use: lang === 'hu' ? 'Banki NYESZ, banki portfólió-kínálattal.' : 'Bank-channel NYESZ with bank portfolio range.' },
+            { name: 'Concorde / Equilor', tag: 'alternative', use: lang === 'hu' ? 'Bróker NYESZ, szélesebb befektetési választék.' : 'Broker NYESZ, broader investment selection.' },
+          ];
+        } else if (n.id === "wait") {
+          providers = [
+            { name: lang === 'hu' ? 'Folyószámla / azonnali megtakarítás' : 'Current / instant savings', tag: 'primary', use: lang === 'hu' ? 'Tartsd meglévő számlán, várj új információra.' : 'Hold in current account, await new information.' },
+          ];
         }
-      }
-    }
-    // ice slide
-    if (!moved && player.onIce && (player.iceVx || player.iceVy)) {
-      const nx = player.x + player.iceVx;
-      const ny = player.y + player.iceVy;
-      if (tankCanMoveTo(player, nx, ny)) {
-        player.x = nx; player.y = ny;
-        player.moveAnim += Math.abs(player.iceVx)+Math.abs(player.iceVy);
-      } else {
-        player.iceVx = 0; player.iceVy = 0;
-      }
-      // decay
-      player.iceVx *= 0.92; player.iceVy *= 0.92;
-      if (Math.abs(player.iceVx)<0.05) player.iceVx = 0;
-      if (Math.abs(player.iceVy)<0.05) player.iceVy = 0;
-    }
-    if (!player.onIce) { player.iceVx = 0; player.iceVy = 0; }
 
-    if (keys[' ']) fireBullet(player);
-    if (player.cooldown>0) player.cooldown--;
-    // pickup
-    for (let i = powerups.length-1; i>=0; i--) {
-      const p = powerups[i];
-      if (rectsOverlap(tankRect(player), {x:p.x, y:p.y, w:TILE*2, h:TILE*2})) {
-        applyPowerup(p);
-        powerups.splice(i,1);
-      }
-    }
-  }
-
-  // enemy spawn
-  spawnTimer--;
-  if (spawnTimer <= 0 && enemies.filter(e=>e.alive).length < enemiesActive && enemiesLeft > 0) {
-    spawnEnemy();
-    spawnTimer = 120;
-  }
-
-  // enemy update
-  for (const e of enemies) if (e.alive) aiUpdate(e);
-
-  // remove dead enemies after delay
-  enemies = enemies.filter(e => e.alive);
-
-  // bullets
-  for (const b of bullets) updateBullet(b);
-  bullets = bullets.filter(b => b.alive);
-
-  // explosions
-  for (const ex of explosions) ex.t++;
-  explosions = explosions.filter(ex => ex.t < ex.max);
-
-  // powerup blink
-  for (const p of powerups) p.blink++;
-
-  // stage cleared?
-  if (enemiesLeft === 0 && enemies.length === 0) stageClear();
+        return (
+          <div key={n.id} className="execution-card">
+            <div className="execution-card-header">{n['name_' + lang]}</div>
+            {providers.map((p, i) => (
+              <div key={i} className="provider-row">
+                <div className="provider-name">
+                  <span className={`provider-tag ${p.tag === 'existing' ? 'existing' : ''}`}>{p.tag}</span>
+                  {p.name}
+                </div>
+                <div className="provider-use">{p.use}</div>
+              </div>
+            ))}
+          </div>
+        );
+      })}
+    </div>
+  );
 }
 
-// ---------- rendering ----------
-function draw() {
-  // outer wall (gray border)
-  ctx.fillStyle = '#000';
-  ctx.fillRect(0,0,canvas.width,canvas.height);
-
-  // skip world rendering until a stage has been built
-  if (!world) {
-    if (state === 'menu') drawMenu();
-    return;
-  }
-
-  // playfield
-  drawTerrain(false);
-
-  // bullets
-  for (const b of bullets) {
-    ctx.fillStyle = '#ffffff';
-    ctx.fillRect(b.x*SCALE, b.y*SCALE, b.w*SCALE, b.h*SCALE);
-  }
-
-  // tanks
-  if (player && player.alive) drawTank(player);
-  for (const e of enemies) drawTank(e);
-
-  // forest goes ON TOP
-  drawTerrain(true);
-
-  // powerups (above forest)
-  for (const p of powerups) drawPowerup(p);
-
-  // explosions
-  for (const ex of explosions) drawExplosion(ex);
-
-  // shield around player
-  if (player && player.alive && shieldTimer > 0) drawShield(player);
-
-  // HUD overlay (in-canvas)
-  drawHUD();
-
-  // overlays
-  if (state === 'menu') drawMenu();
-  if (state === 'paused') drawCenterText('PAUSED');
-  if (state === 'stageclear') drawStageClear();
-  if (state === 'gameover') drawGameOver();
-  if (state === 'win') drawWin();
-}
-
-function drawTerrain(forestPass) {
-  for (let y = 0; y < FIELD; y++) {
-    for (let x = 0; x < FIELD; x++) {
-      const t = world[y][x];
-      const px = x * PX, py = y * PX, sz = PX;
-      if (forestPass) {
-        if (t === T_FOREST) drawForest(px, py, sz);
-      } else {
-        // first draw arena floor
-        ctx.fillStyle = '#000';
-        ctx.fillRect(px, py, sz, sz);
-        if (t === T_BRICK) drawBrick(px, py, sz, x, y);
-        else if (t === T_STEEL) drawSteel(px, py, sz);
-        else if (t === T_WATER) drawWater(px, py, sz);
-        else if (t === T_ICE) drawIce(px, py, sz);
-        else if (t === T_BASE) drawBaseTile(px, py, sz, x, y);
-      }
-    }
-  }
-}
-
-function drawBrick(px, py, sz, x, y) {
-  ctx.fillStyle = 'var(--brick-a)';
-  // pattern: red base + lighter brick stripes — pixel
-  const a = '#a83020';
-  const b = '#f8a060';
-  ctx.fillStyle = a;
-  ctx.fillRect(px, py, sz, sz);
-  // 4 mini-bricks per sub-cell
-  ctx.fillStyle = b;
-  const half = sz/2;
-  // top row
-  ctx.fillRect(px, py, half-1, 1);
-  ctx.fillRect(px+half, py, half-1, 1);
-  // mid
-  ctx.fillRect(px, py+half, half-1, 1);
-  ctx.fillRect(px+half, py+half, half-1, 1);
-  // verticals
-  ctx.fillRect(px+half-1, py+1, 1, half-1);
-  ctx.fillRect(px+sz-1, py+half+1, 1, half-1);
-}
-
-function drawSteel(px, py, sz) {
-  ctx.fillStyle = '#909090';
-  ctx.fillRect(px, py, sz, sz);
-  ctx.fillStyle = '#f0f0f0';
-  ctx.fillRect(px, py, sz/2, sz/2);
-  ctx.fillRect(px+sz/2, py+sz/2, sz/2, sz/2);
-  ctx.fillStyle = '#404040';
-  ctx.fillRect(px+sz/2, py, sz/2, 2);
-  ctx.fillRect(px, py+sz/2, 2, sz/2);
-}
-
-let waterAnim = 0;
-function drawWater(px, py, sz) {
-  ctx.fillStyle = '#0040c0';
-  ctx.fillRect(px, py, sz, sz);
-  ctx.fillStyle = '#00d8ff';
-  const phase = Math.floor(waterAnim/15) % 2;
-  for (let i = 0; i < 3; i++) {
-    const yy = py + 4 + i*6 + (phase?0:2);
-    ctx.fillRect(px+2, yy, 4, 1);
-    ctx.fillRect(px+sz-7, yy+2, 4, 1);
-  }
-}
-
-function drawForest(px, py, sz) {
-  ctx.fillStyle = '#00a020';
-  ctx.fillRect(px, py, sz, sz);
-  ctx.fillStyle = '#00f048';
-  // bushy noise
-  for (let i = 0; i < 6; i++) {
-    const dx = (i*7 + 3) % sz;
-    const dy = (i*5 + 2) % sz;
-    ctx.fillRect(px+dx, py+dy, 2, 2);
-  }
-  ctx.fillStyle = '#008010';
-  ctx.fillRect(px+1, py+sz-2, 2, 2);
-  ctx.fillRect(px+sz-3, py+1, 2, 2);
-}
-
-function drawIce(px, py, sz) {
-  ctx.fillStyle = '#d8d8d8';
-  ctx.fillRect(px, py, sz, sz);
-  ctx.fillStyle = '#ffffff';
-  ctx.fillRect(px, py, sz, 2);
-  ctx.fillRect(px, py, 2, sz);
-  ctx.fillStyle = '#a0a0a0';
-  ctx.fillRect(px+sz-2, py+2, 2, sz-2);
-  ctx.fillRect(px+2, py+sz-2, sz-2, 2);
-}
-
-function drawBaseTile(px, py, sz, x, y) {
-  // 2x2 region; draw an eagle once at top-left of base block
-  if (x === BASE_X && y === BASE_Y) {
-    drawEagle(px, py, sz*2);
-  }
-}
-
-function drawEagle(px, py, sz) {
-  if (!baseAlive) {
-    // crashed eagle: dark gray
-    ctx.fillStyle = '#404040';
-    ctx.fillRect(px, py, sz, sz);
-    ctx.fillStyle = '#202020';
-    for (let i=0;i<8;i++){
-      ctx.fillRect(px + (i*5)%sz, py + (i*7)%sz, 3, 3);
-    }
-    return;
-  }
-  ctx.fillStyle = '#d89030';
-  ctx.fillRect(px, py, sz, sz);
-  // body
-  ctx.fillStyle = '#f8f8f8';
-  const u = sz/16;
-  // simple eagle silhouette
-  // wings
-  ctx.fillRect(px+1*u, py+3*u, 14*u, 4*u);
-  ctx.fillRect(px+3*u, py+2*u, 10*u, 2*u);
-  // head
-  ctx.fillRect(px+6*u, py+1*u, 4*u, 2*u);
-  ctx.fillRect(px+5*u, py+1*u, 6*u, 1*u);
-  // body lower
-  ctx.fillRect(px+5*u, py+7*u, 6*u, 5*u);
-  ctx.fillRect(px+4*u, py+8*u, 8*u, 3*u);
-  // tail
-  ctx.fillRect(px+3*u, py+11*u, 10*u, 2*u);
-  ctx.fillRect(px+2*u, py+13*u, 12*u, 2*u);
-  // beak / eyes (dark)
-  ctx.fillStyle = '#000';
-  ctx.fillRect(px+7*u, py+2*u, 2*u, 1*u);
-  ctx.fillRect(px+6*u, py+9*u, 1*u, 1*u);
-  ctx.fillRect(px+9*u, py+9*u, 1*u, 1*u);
-}
-
-// ---------- tank rendering ----------
-function tankColors(t) {
-  if (t.type === 'player') {
-    // yellow Mario-style player; turns silver/green when upgraded a bit
-    if (t.star >= 2) return { body:'#a8a800', tread:'#f8e040', accent:'#000' };
-    return { body:'#a85820', tread:'#f8d020', accent:'#000' };
-  }
-  // enemy palettes by type
-  if (t.isFlashing) {
-    const c = (Math.floor(performance.now()/120) % 2) ? '#ff2020' : '#ffffff';
-    return { body: c, tread: c, accent:'#000' };
-  }
-  if (t.type === 'basic') return { body:'#909090', tread:'#d0d0d0', accent:'#000' };
-  if (t.type === 'fast')  return { body:'#a0a000', tread:'#f8f898', accent:'#000' };
-  if (t.type === 'power') return { body:'#308030', tread:'#a0f0a0', accent:'#000' };
-  if (t.type === 'armor') {
-    // armor changes color by hp
-    const hp = t.armor;
-    if (hp >= 4) return { body:'#005020', tread:'#00b048', accent:'#000' };
-    if (hp >= 3) return { body:'#604030', tread:'#a07030', accent:'#000' };
-    if (hp >= 2) return { body:'#808030', tread:'#d8d040', accent:'#000' };
-    return { body:'#a83820', tread:'#f88040', accent:'#000' };
-  }
-  return { body:'#888', tread:'#ccc', accent:'#000' };
-}
-
-function drawTank(t) {
-  const px = t.x * SCALE, py = t.y * SCALE, sz = TILE*2*SCALE;
-  // spawn anim (sparkle-in)
-  if (t.spawnAnim > 0) {
-    drawSpawnEffect(px, py, sz, t.spawnAnim);
-    t.spawnAnim--;
-    if (t.spawnAnim > 16) return;
-  }
-  if (t.hitFlash) {
-    if ((t.hitFlash) % 2 === 0) {
-      // skip draw to flash
-    }
-  }
-
-  const c = tankColors(t);
-  const u = sz/16; // pixel unit
-
-  // shadow
-  ctx.fillStyle = 'rgba(0,0,0,0.3)';
-  ctx.fillRect(px+u, py+sz-u, sz-2*u, u);
-
-  // tread animation
-  const tread = Math.floor(t.moveAnim/3) % 2;
-
-  // We'll render the tank as a 16x16 sprite oriented by direction
-  // by drawing 4 different shapes
-  ctx.save();
-  ctx.translate(px+sz/2, py+sz/2);
-  const rot = t.dir * Math.PI/2;
-  ctx.rotate(rot);
-  ctx.translate(-sz/2, -sz/2);
-
-  // tank body — base oriented as if facing UP
-  // treads (left/right verticals)
-  ctx.fillStyle = c.tread;
-  ctx.fillRect(0*u, 2*u, 3*u, 12*u);
-  ctx.fillRect(13*u, 2*u, 3*u, 12*u);
-  // tread bands (animated)
-  ctx.fillStyle = c.accent;
-  for (let i=0;i<6;i++){
-    const yy = 2*u + i*2*u + (tread? u : 0);
-    ctx.fillRect(0*u, yy, 3*u, u);
-    ctx.fillRect(13*u, yy, 3*u, u);
-  }
-  // hull
-  ctx.fillStyle = c.body;
-  ctx.fillRect(3*u, 4*u, 10*u, 9*u);
-  // hull highlight
-  ctx.fillStyle = c.tread;
-  ctx.fillRect(3*u, 4*u, 10*u, u);
-  ctx.fillRect(3*u, 4*u, u, 9*u);
-  // turret
-  ctx.fillStyle = c.body;
-  ctx.fillRect(6*u, 6*u, 4*u, 4*u);
-  ctx.fillStyle = c.accent;
-  ctx.fillRect(6*u, 6*u, 4*u, u);
-  ctx.fillRect(6*u, 6*u, u, 4*u);
-  // cannon (pointing up)
-  ctx.fillStyle = c.accent;
-  ctx.fillRect(7*u, 0*u, 2*u, 7*u);
-
-  ctx.restore();
-}
-
-function drawSpawnEffect(px, py, sz, t) {
-  const phase = Math.floor((32 - t)/4) % 4;
-  const colors = ['#fff', '#888', '#fff', '#aaa'];
-  ctx.fillStyle = colors[phase];
-  ctx.fillRect(px+sz/4, py+sz/4, sz/2, sz/2);
-  ctx.fillStyle = colors[(phase+1)%4];
-  ctx.fillRect(px+sz/3, py+1, sz/3, sz-2);
-  ctx.fillRect(px+1, py+sz/3, sz-2, sz/3);
-}
-
-function drawShield(t) {
-  const px = t.x*SCALE, py = t.y*SCALE, sz = TILE*2*SCALE;
-  const phase = Math.floor(performance.now()/80) % 2;
-  ctx.strokeStyle = phase ? '#fff' : '#88f';
-  ctx.lineWidth = 2;
-  ctx.strokeRect(px+1, py+1, sz-2, sz-2);
-  ctx.lineWidth = 1;
-  ctx.strokeStyle = phase ? '#88f' : '#fff';
-  ctx.strokeRect(px-2, py-2, sz+4, sz+4);
-}
-
-function drawExplosion(ex) {
-  const f = ex.t / ex.max;
-  const sz = (ex.big ? 64 : 32) * (0.4 + f*1.4);
-  const cx = (ex.x+12) * SCALE, cy = (ex.y+12) * SCALE;
-  // pixelated explosion frames
-  ctx.fillStyle = f < 0.4 ? '#fff' : f < 0.7 ? '#f80' : '#600';
-  const half = sz/2;
-  ctx.fillRect(cx-half, cy-half, sz, sz);
-  ctx.fillStyle = f < 0.4 ? '#ff8' : f < 0.7 ? '#fc0' : '#a20';
-  ctx.fillRect(cx-half/2, cy-sz, half, sz*2);
-  ctx.fillRect(cx-sz, cy-half/2, sz*2, half);
-}
-
-function drawPowerup(p) {
-  const px = p.x*SCALE, py = p.y*SCALE, sz = TILE*2*SCALE;
-  if (Math.floor(p.blink/8) % 2 === 0) return;
-  ctx.fillStyle = '#000';
-  ctx.fillRect(px, py, sz, sz);
-  ctx.fillStyle = '#f8d020';
-  ctx.fillRect(px+2, py+2, sz-4, sz-4);
-  ctx.fillStyle = '#000';
-  // icon center
-  const u = sz/16;
-  ctx.fillStyle = '#000';
-  if (p.type === 'star') {
-    // simple star
-    ctx.fillRect(px+7*u, py+2*u, 2*u, 12*u);
-    ctx.fillRect(px+2*u, py+7*u, 12*u, 2*u);
-    ctx.fillRect(px+4*u, py+4*u, 8*u, 8*u);
-    ctx.fillStyle = '#f8d020';
-    ctx.fillRect(px+6*u, py+6*u, 4*u, 4*u);
-  } else if (p.type === 'shield') {
-    ctx.fillRect(px+4*u, py+3*u, 8*u, 10*u);
-    ctx.fillStyle = '#f8d020';
-    ctx.fillRect(px+6*u, py+5*u, 4*u, 6*u);
-  } else if (p.type === 'timer') {
-    ctx.fillRect(px+5*u, py+3*u, 6*u, 2*u);
-    ctx.fillRect(px+4*u, py+4*u, 8*u, 9*u);
-    ctx.fillStyle = '#f8d020';
-    ctx.fillRect(px+6*u, py+6*u, 4*u, 5*u);
-    ctx.fillStyle = '#000';
-    ctx.fillRect(px+7*u, py+7*u, 1*u, 3*u);
-    ctx.fillRect(px+7*u, py+9*u, 3*u, 1*u);
-  } else if (p.type === 'shovel') {
-    ctx.fillRect(px+7*u, py+2*u, 2*u, 8*u);
-    ctx.fillRect(px+4*u, py+10*u, 8*u, 4*u);
-    ctx.fillStyle = '#f8d020';
-    ctx.fillRect(px+5*u, py+11*u, 6*u, 2*u);
-  } else if (p.type === 'grenade') {
-    ctx.beginPath();
-    ctx.arc(px+sz/2, py+sz/2+1, sz/3, 0, Math.PI*2);
-    ctx.fill();
-    ctx.fillRect(px+7*u, py+2*u, 2*u, 3*u);
-  } else if (p.type === 'life') {
-    ctx.fillRect(px+3*u, py+5*u, 4*u, 4*u);
-    ctx.fillRect(px+9*u, py+5*u, 4*u, 4*u);
-    ctx.fillRect(px+4*u, py+9*u, 8*u, 3*u);
-    ctx.fillRect(px+6*u, py+12*u, 4*u, 1*u);
-  } else if (p.type === 'tank') {
-    ctx.fillRect(px+3*u, py+4*u, 10*u, 8*u);
-    ctx.fillStyle = '#f8d020';
-    ctx.fillRect(px+5*u, py+6*u, 6*u, 4*u);
-  }
-}
-
-// ---------- HUD ----------
-function drawHUD() {
-  // top status bar inside canvas (translucent)
-  ctx.fillStyle = '#000';
-  ctx.fillRect(0, 0, canvas.width, 24);
-
-  ctx.fillStyle = '#d89030';
-  ctx.font = '10px "Press Start 2P", monospace';
-  ctx.textBaseline = 'top';
-  ctx.fillText(`SCORE ${score}`, 8, 8);
-  ctx.fillText(`HI  ${Math.max(highScore, score)}`, 160, 8);
-  ctx.fillText(`STAGE ${stageIdx+1}`, 300, 8);
-  ctx.fillText(`P1 ♥${lives}`, 400, 8);
-  ctx.fillText(`LEFT ${enemiesLeft + enemies.length}`, 480, 8);
-
-  if (freezeTimer > 0) {
-    ctx.fillStyle = '#88f';
-    ctx.fillText('❄', 590, 8);
-  }
-  if (shieldTimer > 0 && state==='play') {
-    ctx.fillStyle = '#fff';
-    ctx.fillText('⛨', 605, 8);
-  }
-}
-
-function drawCenterText(text) {
-  ctx.fillStyle = 'rgba(0,0,0,0.7)';
-  ctx.fillRect(0, canvas.height/2-30, canvas.width, 60);
-  ctx.fillStyle = '#f8f8f8';
-  ctx.font = '24px "Press Start 2P", monospace';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillText(text, canvas.width/2, canvas.height/2);
-  ctx.textAlign = 'start';
-}
-
-function drawMenu() {
-  ctx.fillStyle = 'rgba(0,0,0,0.92)';
-  ctx.fillRect(0,0,canvas.width,canvas.height);
-  ctx.fillStyle = '#f8d020';
-  ctx.font = '40px "Press Start 2P", monospace';
-  ctx.textAlign = 'center';
-  ctx.fillText('TANK 1990', canvas.width/2, 180);
-  ctx.fillStyle = '#f8f8f8';
-  ctx.font = '12px "Press Start 2P", monospace';
-  ctx.fillText('A BATTLE CITY TRIBUTE', canvas.width/2, 230);
-  ctx.fillStyle = '#d89030';
-  ctx.font = '14px "Press Start 2P", monospace';
-  const blink = Math.floor(performance.now()/400)%2;
-  if (blink) ctx.fillText('PRESS ENTER TO START', canvas.width/2, 360);
-  ctx.fillStyle = '#888';
-  ctx.font = '9px "Press Start 2P", monospace';
-  ctx.fillText('ARROWS — MOVE     SPACE — FIRE     P — PAUSE', canvas.width/2, 440);
-  ctx.fillText('DEFEND THE EAGLE', canvas.width/2, 470);
-  ctx.textAlign = 'start';
-}
-
-function drawStageClear() {
-  ctx.fillStyle = 'rgba(0,0,0,0.85)';
-  ctx.fillRect(0,0,canvas.width,canvas.height);
-  ctx.fillStyle = '#f8f8f8';
-  ctx.font = '18px "Press Start 2P", monospace';
-  ctx.textAlign = 'center';
-  ctx.fillText(`STAGE ${stageIdx+1} CLEAR`, canvas.width/2, 140);
-  ctx.font = '10px "Press Start 2P", monospace';
-  ctx.fillStyle = '#d89030';
-  const totals = [
-    ['BASIC', 100, killsByType[0]],
-    ['FAST',  200, killsByType[1]],
-    ['POWER', 300, killsByType[2]],
-    ['ARMOR', 400, killsByType[3]],
-  ];
-  let y = 220;
-  for (const [name, pts, count] of totals) {
-    ctx.fillStyle = '#f8d020'; ctx.fillText(`${count} x ${pts}`, canvas.width/2 - 40, y);
-    ctx.fillStyle = '#fff';     ctx.fillText(name, canvas.width/2 + 60, y);
-    y += 30;
-  }
-  ctx.fillStyle = '#fff';
-  ctx.fillText(`SCORE: ${score}`, canvas.width/2, y+30);
-  ctx.fillStyle = '#888';
-  ctx.fillText('PRESS ENTER FOR NEXT STAGE', canvas.width/2, y+80);
-  ctx.textAlign = 'start';
-}
-
-function drawGameOver() {
-  ctx.fillStyle = 'rgba(0,0,0,0.85)';
-  ctx.fillRect(0,0,canvas.width,canvas.height);
-  ctx.fillStyle = '#d83030';
-  ctx.font = '36px "Press Start 2P", monospace';
-  ctx.textAlign = 'center';
-  ctx.fillText('GAME OVER', canvas.width/2, canvas.height/2 - 20);
-  ctx.fillStyle = '#fff';
-  ctx.font = '12px "Press Start 2P", monospace';
-  ctx.fillText(`FINAL SCORE: ${score}`, canvas.width/2, canvas.height/2 + 30);
-  ctx.fillStyle = '#888';
-  ctx.font = '10px "Press Start 2P", monospace';
-  if (Math.floor(performance.now()/400)%2)
-    ctx.fillText('PRESS ENTER TO RESTART', canvas.width/2, canvas.height/2 + 80);
-  ctx.textAlign = 'start';
-}
-
-function drawWin() {
-  ctx.fillStyle = 'rgba(0,0,0,0.9)';
-  ctx.fillRect(0,0,canvas.width,canvas.height);
-  ctx.fillStyle = '#f8d020';
-  ctx.font = '30px "Press Start 2P", monospace';
-  ctx.textAlign = 'center';
-  ctx.fillText('VICTORY!', canvas.width/2, canvas.height/2 - 30);
-  ctx.fillStyle = '#fff';
-  ctx.font = '12px "Press Start 2P", monospace';
-  ctx.fillText('All stages cleared.', canvas.width/2, canvas.height/2 + 10);
-  ctx.fillText(`SCORE: ${score}`, canvas.width/2, canvas.height/2 + 40);
-  ctx.fillStyle = '#888';
-  ctx.font = '10px "Press Start 2P", monospace';
-  if (Math.floor(performance.now()/400)%2)
-    ctx.fillText('PRESS ENTER FOR NEW GAME', canvas.width/2, canvas.height/2 + 100);
-  ctx.textAlign = 'start';
-}
-
-// ---------- main loop ----------
-let last = performance.now();
-function loop(now) {
-  const dt = now - last;
-  last = now;
-  waterAnim++;
-
-  update();
-  draw();
-
-  requestAnimationFrame(loop);
-}
-
-requestAnimationFrame(loop);
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
 </script>
 </body>
 </html>
